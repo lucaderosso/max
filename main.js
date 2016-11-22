@@ -15,8 +15,7 @@
 autowatch = 1;
 
 include("utilities");
-// include("object-plane");
-include("object-dot");
+include("characters");
 
 var dial0 = 0;
 var dial1 = 0;
