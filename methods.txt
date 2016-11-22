@@ -1,0 +1,10 @@
+0, noAction;
+1, easeToStep;
+2, snapToStep;
+3, easeToCenter;
+4, rotate;
+5, noAction;
+6, noAction;
+7, noAction;
+8, noAction;
+9, noAction;
