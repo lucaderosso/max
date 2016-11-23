@@ -11,12 +11,16 @@
 
 
 
-// GENERAL
+//===================
+//		General
+//===================
+
 autowatch = 1;
 
 include("utilities");
 include("characters");
 
+// dials controlled by user
 var dial0 = 0;
 var dial1 = 0;
 var dial2 = 0;
@@ -26,30 +30,39 @@ var dial5 = 0;
 var dial6 = 0;
 var dial7 = 0;
 
+// low mid high levels coming from the DSP Values M4L device in the same track as this one.
 var low = 0;
 var mid = 0;
 var high = 0;
 
+// create two x to display at the top and bottom of the projection 
+var topStatus = new Character(0, 0.9375, 0.005, "x");
+var bottomStatus = new Character(0, -0.9375, 0.005, "x");
+var progressBar = new Line(winL, winB, winR, winB, 20, 1);
 
 
-// SETUP
-makeGrid(8);
+
+//==================
+//		Setup
+//==================
+
+makeGrid(16); // build a grid that draw() will display
 
 
 
-// METHODS
-function noAction(){
-	// This is ment to do nothing, to allow the possibility for the random function 
-	// selection in the patch to avoid associating actions to midi notes.
-}
+//==================
+//		Methods
+//==================
 
 function levels(l, m, h){
+	// update values for low mid high levels coming from the DSP Values M4L device in the same track as this one.
 	low = l;
 	mid = m;
 	high = h;
 }
 
 function dialsValues(d0, d1, d2, d3, d4, d5, d6, d7){
+	// update valued for dials controlled by user
 	dial0 = d0;
 	dial1 = d1;
 	dial2 = d2;
@@ -60,33 +73,21 @@ function dialsValues(d0, d1, d2, d3, d4, d5, d6, d7){
 	dial7 = d7;
 }
 
-function addPlane(xPos, yPos, width, height, r, g, b){
-	shapes.push(new Plane(xPos, yPos, width, height, r, g, b));		
-}
-
-function clearAll(){
-	layer1 = [];
-	layer2 = [];
-	layer3 = [];
-	layer4 = [];
-}
-
 function background(){
 	myRender.erase_color = [dial7, dial7, dial7, 1-(dial7 * 2)];
 }
 
-var topStatus = new Character(0, 0.9375, 0.005, 0);
-var bottomStatus = new Character(0, -0.9375, 0.005, 0);
+function updateProgressBar(timeLeft, totalTime){
+	progressBar.endPoint.x = (windowWidth * (timeLeft / totalTime)) - winR;
+}
 
-// DRAW
+
+
+//==================
+//		Draw
+//==================
 
 function draw(){
-	
-	background();
-	gridIntensity();
-
-	topStatus.run();
-	bottomStatus.run();
 
 	if(layer1.length > 0){
 		for(var i = 0; i < layer1.length; i++){
@@ -118,8 +119,14 @@ function draw(){
 		}
 	}
 
+	topStatus.run();
+	bottomStatus.run();
+	progressBar.run();
 
+	background();
+	gridIntensity();
 	viewPort();
+
 	myRender.erase();
 	myRender.drawswap();
 

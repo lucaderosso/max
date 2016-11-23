@@ -72,7 +72,7 @@ var Color = {
 	}
 };
 
-function Line(startX, startY, endX, endY){
+function Line(startX, startY, endX, endY, width, opacity){
 	this.startPoint = Object.create(Vector);
 	this.startPoint.x = startX;
 	this.startPoint.y = startY;
@@ -87,13 +87,15 @@ function Line(startX, startY, endX, endY){
 	this.color.r = 1;
 	this.color.g = 1;
 	this.color.b = 1;
-	this.color.a = 0.1;
+	this.color.a = opacity;
+
+	this.width = width;
 }
 
 Line.prototype.display = function(){
-	// mySketch.glcolor(0.39, 0.94, 1, 0.2);
+	// mySketch.glcolor(0.39, 0.94, 1, 1);
 	mySketch.glcolor(this.color.r, this.color.g, this.color.b, this.color.a);
-	mySketch.gllinewidth(3);
+	mySketch.gllinewidth(this.width);
 	mySketch.linesegment(this.startPoint.x, this.startPoint.y, 0, this.endPoint.x, this.endPoint.y, 0);
 }
 
@@ -153,11 +155,11 @@ function gridResolution(res){
 	var verticalRes = Math.floor(windowHeight / wIncrement);
 	var verticalCorrector = (windowHeight - (verticalRes * wIncrement)) / 2;
 	
-	post("wIncrement: " + wIncrement + "\n");
-	post("verticalRes: " + verticalRes + "\n");
-	post("verticalCorrector: " + verticalCorrector + "\n");
-	post("\n");
-	post("\n");
+	// post("wIncrement: " + wIncrement + "\n");
+	// post("verticalRes: " + verticalRes + "\n");
+	// post("verticalCorrector: " + verticalCorrector + "\n");
+	// post("\n");
+	// post("\n");
 
 	for(var i = 0; i <= res; i++){
 		var xVal = (wIncrement * i) - (windowWidth / 2);
@@ -186,7 +188,7 @@ function makeGrid(res){
 			var eX = xPositions[i];
 			var eY = yPositions[yPositions.length - 1];
 			
-			grid.push(new Line(sX, sY, eX, eY));
+			grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
 		}
 
 		for(var i = 0; i < yPositions.length; i++){
@@ -195,7 +197,7 @@ function makeGrid(res){
 			var eX = xPositions[xPositions.length - 1];
 			var eY = yPositions[i];
 
-			grid.push(new Line(sX, sY, eX, eY));
+			grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
 		}
 
 		for(var i = 0; i < xPositions.length - 1; i++){
@@ -204,7 +206,7 @@ function makeGrid(res){
 			var eX = xPositions[xPositions.length - 1 - i];
 			var eY = yPositions[yPositions.length - 1];
 			
-			// grid.push(new Line(sX, sY, eX, eY));
+			// grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
 		}
 
 		for(var i = 1; i < xPositions.length - 1; i++){
@@ -213,7 +215,7 @@ function makeGrid(res){
 			var eX = xPositions[xPositions.length - 1];
 			var eY = yPositions[yPositions.length - 1 - i];
 			
-			// grid.push(new Line(sX, sY, eX, eY));
+			// grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
 		}
 
 		for(var i = 1; i < xPositions.length - 1; i++){
@@ -222,7 +224,7 @@ function makeGrid(res){
 			var eX = xPositions[0];
 			var eY = yPositions[i];
 			
-			// grid.push(new Line(sX, sY, eX, eY));
+			// grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
 		}
 
 		for(var i = 0; i < xPositions.length - 1; i++){
@@ -231,7 +233,7 @@ function makeGrid(res){
 			var eX = xPositions[xPositions.length - 1];
 			var eY = yPositions[i];
 			
-			// grid.push(new Line(sX, sY, eX, eY));
+			// grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
 		}
 	}
 
@@ -264,8 +266,9 @@ function windowSize(w ,h){
 function gridIntensity(){
 	if(grid.length > 0){
 		for(var i = 0; i < grid.length; i++){
-			// addin 0.1 so it never goes to 0
-			grid[i].color.a = high + 0.1;
+			// adding 0.1 so it never goes to 0
+			grid[i].color.a = (high * dial1) + 0.1;
+
 		}
 	}
 }
