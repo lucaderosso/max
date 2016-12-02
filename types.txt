@@ -1,5 +1,8 @@
-0, x;
-1, cyclopx;
-2, plane;
+0, round;
+1, rect;
+2, square;
 3, circle;
-4, razor;
+4, x;
+5, rail;
+6, stripes;
+7, razor;

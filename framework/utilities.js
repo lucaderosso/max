@@ -9,12 +9,6 @@
 
 // SETTING UP WINDOW, RENDER AND SKETCH OBJECTS
 
-var myMatrix = new JitterMatrix("textureMatrix", 4, "char", 128, 128);
-
-var myMovie = new JitterObject("jit.movie", 128, 128);
-myMovie.read("alpha-blur-B.png");
-myMovie.matrixcalc(myMatrix, myMatrix);
-
 var myWindow = new JitterObject("jit.window", "video-window"); //
 myWindow.floating = 0;
 myWindow.size = [300, 600];
@@ -22,27 +16,20 @@ myWindow.size = [300, 600];
 myWindow.pos = [0, 50];
 myWindow.fsaa = 1;
 myWindow.floating = 1;
-// myWindow.border = 0;
 myWindow.fullscreen = 0;
 myWindow.usedstrect = 1;
 myWindow.depthbuffer = 0; // to enable transparency
 myWindow.fsmenubar = 0;
 
+
 var myRender = new JitterObject("jit.gl.render", "video-window");
 myRender.erase_color = [0, 0, 0, 1]; // change last value to set background opacity
 myRender.high_res = 1;
 myRender.ortho = 2;
-myRender.texture("myTexture", "jit_matrix", "textureMatrix");
 
 var mySketch = new JitterObject("jit.gl.sketch", "video-window");
 mySketch.blend_enable = 1; //because we are working with transparency
 mySketch.antialias = 1;
-
-var mySecondSketch = new JitterObject("jit.gl.sketch", "video-window");
-mySecondSketch.blend_enable = 1; //because we are working with transparency
-mySecondSketch.antialias = 1;
-mySecondSketch.tex_map = 0; //the onli one that allows the texture to scale with the object 
-mySecondSketch.texture = ["myTexture"];
 
 var viewPortStatus = 1;
 var xPositions = [];
@@ -52,18 +39,12 @@ var grid = [];
 // 1 X 2 = 0.5 X 1
 var withRatio = myWindow.size[0] / myWindow.size[1]; // width ratio based on screen size
 var heightRatio = 1; // height ratio based on screen size
-
 var winL = -withRatio; // window left cohordinate
 var winR = withRatio; // window right cohordinate
 var winB = -heightRatio; // window bottom cohordinate
 var winT = heightRatio; // window top cohordinate
-
 var windowWidth = Math.abs(winL) + winR;
 var windowHeight = Math.abs(winB) + winT;
-
-var res = 16; // grid resolutio is expressed in how many cells to display horizontaly, vertical count will be calculated accordingly
-var increment = windowWidth / res;
-post("increment: " + increment);
 
 var Vector = {
 	x: 0.0,
@@ -194,7 +175,7 @@ function gridResolution(res){
 	// post("yPositions: " + yPositions + "\n");
 }
 
-function makeGrid(){
+function makeGrid(res){
 
 	grid = [];
 	

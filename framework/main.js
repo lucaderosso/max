@@ -19,7 +19,6 @@ autowatch = 1;
 
 include("utilities");
 include("characters");
-include("spores");
 
 // dials controlled by user
 var dial0 = 0;
@@ -47,8 +46,7 @@ var progressBar = new Line(winL, winB, winR, winB, 20, 1);
 //		Setup
 //==================
 
-makeGrid(); // build a grid that draw() will display
-generate(4); // generate batch of particles
+makeGrid(16); // build a grid that draw() will display
 
 
 
@@ -89,15 +87,7 @@ function updateProgressBar(timeLeft, totalTime){
 //		Draw
 //==================
 
-var clock = 1;
-
 function draw(){
-
-	clock += 1;
-
-	if(clock > 100){
-		clock = 1;
-	}
 
 	if(layer1.length > 0){
 		for(var i = 0; i < layer1.length; i++){
@@ -122,18 +112,12 @@ function draw(){
 			layer4[i].run();
 		}
 	}
-	// you could consider having an effect where stacked thin black panles appear on top of everithing as if creating cuts in the images.
+
 	if(grid.length > 0){
 		for(var i = 0; i < grid.length; i++){
 			grid[i].run();
 		}
 	}
-
-	// if(particles.length > 0){
-	// 	for(var i = 0; i < particles.length; i++){
-	// 		particles[i].run();
-	// 	}
-	// }
 
 	topStatus.run();
 	bottomStatus.run();
@@ -149,6 +133,5 @@ function draw(){
 	// reset the sketch at every frame to avoid to overload the command list 
 	// that's because the sketch object will keep accumulating all the commands at each cycle	
 	mySketch.reset();
-	mySecondSketch.reset();
 
 }
