@@ -142,7 +142,7 @@ function draw(){
 	}
 
 	if(layer2.length > 0){
-		for(var i = 0; i < layer2.length; i++){
+		for(var i =	 0; i < layer2.length; i++){
 			layer2[i].run();
 		}
 	}
@@ -179,7 +179,7 @@ function draw(){
 	gridIntensity();
 	viewPort();
 	
-	// displace();
+	shockLifespan(dial2);
 
 	myRender.erase();
 	myRender.drawswap();

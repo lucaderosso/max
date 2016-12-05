@@ -23,6 +23,7 @@ var layer2 = [];
 var layer3 = [];
 var layer4 = [];
 
+
 var positions = [-increment, increment];
 var size_multipliers = [0.625, 0.125, 0.25, 0.5, 1];
 
@@ -32,7 +33,7 @@ var vel = 0;
 
 
 //====================================
-//		Methods to manage layers
+//		Methods to manage allLayers
 //====================================
 
 function clearAll(){
@@ -128,7 +129,7 @@ Character.prototype.display = function(){
 	// mySketch.moveto(0, 0, 0); is used below to center the composition on x,y 0,0.
 	this.freq = lfoFreq();
 	mySketch.glpushmatrix();
-	var alpha = this.lifespan / 255.0;
+	var alpha = 255.0;
 	mySketch.glcolor(this.color.r, this.color.g, this.color.b, alpha);
 	mySketch.gllinewidth(4);
 
@@ -201,19 +202,29 @@ Character.prototype.display = function(){
 			mySketch.plane(windowWidth/w, windowHeight/4, windowWidth/w, windowHeight/4);
 	        break;
 
+	    case "v_line":
+		    mySketch.gltranslate(this.location.x/2 + this.location.y/2, 0, 0);
+			mySketch.linesegment(-0.5, -1, 0, -0.5, 1, 0);
+			break;
+
+		case "h_line":
+		    mySketch.gltranslate(0, this.location.x/2 + this.location.y/2, 0);
+			mySketch.linesegment(-1, 0, 0, 1, 0, 0);	
+	        break;
+
 	    case "razor":
 		    mySketch.gltranslate(this.location.x, 0, 0);
 			mySketch.linesegment(-0.5, -1, 0, -0.5, 1, 0);
 			mySketch.moveto(-windowHeight/2, 0, 0); 
-	        mySketch.glcolor(0, 0, 0, 1);
-			mySketch.plane(windowWidth/2, windowHeight/2, windowWidth/2, windowHeight/2);
+	        // mySketch.glcolor(0, 0, 0, 1);
+			// mySketch.plane(windowWidth/2, windowHeight/2, windowWidth/2, windowHeight/2);
 
 		    mySketch.gltranslate(-this.location.x, this.location.y, 0);
 		    mySketch.glcolor(1, 1, 1, 1);
 			mySketch.linesegment(-1, 0, 0, 1, 0, 0);
 			mySketch.moveto(0, -windowHeight/2, 0); 
-	        mySketch.glcolor(0, 0, 0, 1);
-			mySketch.plane(windowWidth/2, windowHeight/2, windowWidth/2, windowHeight/2);
+	        // mySketch.glcolor(0, 0, 0, 1);
+			// mySketch.plane(windowWidth/2, windowHeight/2, windowWidth/2, windowHeight/2);
 	        break;
 
 	    default:
@@ -272,11 +283,11 @@ Character.prototype.easeTo = function(position, target, ease){
 
 Character.prototype.flash = function(){
 	if((clock % 3) == 0){
-		// this.location.x = 0.2;
-		this.color.a = 1;
+		this.lifespan = 255;
+		// this.color.a = 1;
 	} else {
-		// this.location.x = 0;
-		this.color.a = 0;
+		this.lifespan = 0;
+		// this.color.a = 0;
 	}
 }
 
@@ -329,8 +340,8 @@ function addAndPosition(layer, type, layout, quantity, size){
 		case "random":
 			for(var i = 0; i < quantity; i++){
 				// wil arrange objects randomly on the grid
-				var xPos = positions[Math.floor((Math.random() * 7))];
-				var yPos = positions[Math.floor((Math.random() * 7))];
+				var xPos = positions[Math.floor((Math.random() * 2))];
+				var yPos = positions[Math.floor((Math.random() * 2))];
 				addCharactersToLayer(array, xPos, yPos, size, type);
 			}
 		break;
@@ -428,11 +439,6 @@ function calculateLocationIncrements(wRes, hRes){
 //		Methods to move characters
 //=====================================
 
-function noAction(){
-	// This is ment to do nothing, to allow the possibility for the random function 
-	// selection in the patch to avoid associating actions to midi notes.
-}
-
 function rotate(layer, velocity){
 	var array = getArrayForLayer(layer);
 	// enable sustain to maintain image on screen for as long as pad is pressed
@@ -527,8 +533,8 @@ function makeStep(layer, velocity, orientation, ease){
 					yStep = positions[Math.floor((Math.random() * 2))];
 				break;
 				case "center":
-						array[i].target.x = positions[Math.floor((Math.random() * 2))] * (Math.random() * horizontalRes / 2);
-						array[i].location.x = array[i].target.x;
+					array[i].target.x = positions[Math.floor((Math.random() * 2))] * (Math.random() * horizontalRes / 2);
+					array[i].location.x = array[i].target.x;
 					xStep = -array[i].target.x;
 					yStep = 0;
 			    default:
@@ -590,7 +596,6 @@ function flash(layer, velocity){
 			if(velocity > 0){
 				array[i].flashing = true;
 			} else {
-				array[i].color.a = 0;
 				array[i].flashing = false;
 			}
 		}
@@ -612,29 +617,29 @@ function appear(layer, velocity){
 }
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
-// UNCOMMENT THIS METHOD CALL INSIDE DRAW() TO MAKE IT WORK 
-function displace(){
-	// var array = getArrayForLayer(layer);
-	// enable sustain to maintain image on screen for as long as pad is pressed
-	// sustain(layer, velocity);
-	// do the following only if the array is populated to avoid errors
-	if(layer1.length > 0){
-		for(var i = 0; i < layer1.length; i++){
-			if(dial2 > 0){		
-				// recover lifespan
-				recoverLifespan(layer1[i]);
-				var distance = layer1[i].size * high;
-				// layer1[i].location.y = layer1[i].location.y + (distance - (distance / 2);
-				layer1[i].size = layer1[i].size * (1 + high);
-				post(high + "\n");
-			} else if (dial2 == 0) {
-				// if (array[i].rotation % 45 != 0){
-					// array[i].rotation += 45 - (array[i].rotation % 45);
-				// } 
-				// array[i].rotating = false;
-			}
-		}
-	}
+// THIS IS NOT EFFICIENT
+function shockLifespan(dialValue){
+
+// var allLayers = [layer1, layer2, layer3, layer4];
+// 	for(var i = 0; i < allLayers.length; i++){
+		
+// 		var layer = allLayers[i];
+
+// 		if(layer.length > 0){
+
+
+// 			for(var f = 0; f < layer.length; f++){
+// 				if(dialValue > 0){		
+// 					layer[f].lifespan = layer[f].lifespan * (high);
+// 					post("layer[f].lifespan: " + layer[f].lifespan + "\n")
+// 				} else if (dialValue == 0) {
+// 					layer[f].lifespan = 255;
+// 				}
+// 			}
+// 		}	
+// 	}
+
+// 	post(allLayers[1].length + "\n");
 }
 
 function stepRandomly(layer, velocity){

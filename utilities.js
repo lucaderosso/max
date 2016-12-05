@@ -21,8 +21,8 @@ myWindow.size = [300, 600];
 // myWindow.rect = [305, 305];
 myWindow.pos = [0, 50];
 myWindow.fsaa = 1;
-myWindow.floating = 0;
-// myWindow.border = 0;
+myWindow.floating = 1;
+myWindow.border = 1;
 myWindow.fullscreen = 0;
 myWindow.usedstrect = 1;
 myWindow.depthbuffer = 0; // to enable transparency
@@ -158,9 +158,9 @@ function viewPort(){
 	} else {
 		mySketch.glcolor(0, 0, 0, 1);
 		mySketch.moveto(-1.5, 1);
-		mySketch.plane(1, 2);
+		// mySketch.plane(1, 2);
 		mySketch.moveto(1.5, 1);
-		mySketch.plane(1, 2);
+		// mySketch.plane(1, 2);
 		myRender.axes = 0;
 	}
 }

@@ -7,3 +7,5 @@
 6, stripes;
 7, razor;
 8, hexagon;
+9, h_line;
+10, v_line;
