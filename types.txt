@@ -6,3 +6,4 @@
 5, rail;
 6, stripes;
 7, razor;
+8, hexagon;

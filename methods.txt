@@ -1,12 +1,12 @@
-0, noAction;
+0, appear;
 1, stepRandomly;
 2, stepVertically;
 3, stepHorizontally;
-4, stepToCenter;
+4, bounce;
 5, easeRandomly;
 6, easeVertically;
 7, easeHorizontally;
 8, easeToCenter;
 9, rotate;
-10, flash;
-11, appear;
+10, flip;
+11, flash;

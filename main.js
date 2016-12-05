@@ -56,6 +56,21 @@ generate(4); // generate batch of particles
 //		Methods
 //==================
 
+function transport(l, m, h){
+	// update values for low mid high levels coming from the DSP Values M4L device in the same track as this one.
+	low = l;
+	mid = m;
+	high = h;
+}
+
+function lfoFreq(){
+	// var freqs = [2, 4, 8, 16, 32];
+	var freqs = [32, 16, 8, 4, 2, 1];
+	var freq = freqs[dial0];
+	// post("freq: " + freq + "\n");
+	return freq;
+}
+
 function levels(l, m, h){
 	// update values for low mid high levels coming from the DSP Values M4L device in the same track as this one.
 	low = l;
@@ -65,7 +80,7 @@ function levels(l, m, h){
 
 function dialsValues(d0, d1, d2, d3, d4, d5, d6, d7){
 	// update valued for dials controlled by user
-	dial0 = d0;
+	dial0 = d0; //used for lfo frequency
 	dial1 = d1;
 	dial2 = d2;
 	dial3 = d3;
@@ -84,6 +99,16 @@ function updateProgressBar(timeLeft, totalTime){
 }
 
 
+tsk = new Task(repeater_function, this);
+tsk.interval = 1000; // every second
+tsk.repeat();  // do it 3 times
+// Here is a repeater function that posts its iteration count to the Max window:
+var flag = false;
+
+function repeater_function(){
+	flag = true;
+	flag = false;
+}
 
 //==================
 //		Draw
@@ -92,8 +117,19 @@ function updateProgressBar(timeLeft, totalTime){
 var clock = 1;
 
 function draw(){
+	// tsk.interval = 100000;
+	// tsk.repeat(10);
 
-	clock += 1;
+	// post("flag: " + flag + "\n");
+
+
+	if (clock <= 32){
+		clock += 1;		
+	} else {
+		clock = 1;
+	}
+    
+    // post(clock + "\n");
 
 	if(clock > 100){
 		clock = 1;
@@ -142,6 +178,8 @@ function draw(){
 	background();
 	gridIntensity();
 	viewPort();
+	
+	// displace();
 
 	myRender.erase();
 	myRender.drawswap();

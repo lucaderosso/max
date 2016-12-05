@@ -21,7 +21,7 @@ myWindow.size = [300, 600];
 // myWindow.rect = [305, 305];
 myWindow.pos = [0, 50];
 myWindow.fsaa = 1;
-myWindow.floating = 1;
+myWindow.floating = 0;
 // myWindow.border = 0;
 myWindow.fullscreen = 0;
 myWindow.usedstrect = 1;
@@ -48,6 +48,7 @@ var viewPortStatus = 1;
 var xPositions = [];
 var yPositions = [];
 var grid = [];
+
 // 1440 X 900 = 3.2 X 2
 // 1 X 2 = 0.5 X 1
 var withRatio = myWindow.size[0] / myWindow.size[1]; // width ratio based on screen size
@@ -61,9 +62,13 @@ var winT = heightRatio; // window top cohordinate
 var windowWidth = Math.abs(winL) + winR;
 var windowHeight = Math.abs(winB) + winT;
 
-var res = 16; // grid resolutio is expressed in how many cells to display horizontaly, vertical count will be calculated accordingly
-var increment = windowWidth / res;
-post("increment: " + increment);
+var columns = 16; // grid resolutio is expressed in how many cells to display horizontaly, vertical count will be calculated accordingly
+var increment = windowWidth / columns;
+
+var horizontalRes = windowWidth / increment;
+var verticalRes = windowHeight / increment;
+
+
 
 var Vector = {
 	x: 0.0,
@@ -161,12 +166,12 @@ function viewPort(){
 }
 
 
-function gridResolution(res){
+function gridResolution(columns){
 	xPositions = [];
 	yPositions = [];
 
 	// if (withRatio > heightRatio){
-	var wIncrement = windowWidth / res;		
+	var wIncrement = windowWidth / columns;		
 	// } else if (withRatio <= heightRatio){
 	// 	var wIncrement = windowWidth / wRes;
 	// }
@@ -180,7 +185,7 @@ function gridResolution(res){
 	// post("\n");
 	// post("\n");
 
-	for(var i = 0; i <= res; i++){
+	for(var i = 0; i <= columns; i++){
 		var xVal = (wIncrement * i) - (windowWidth / 2);
 		xPositions.push(xVal);
 	}
@@ -198,8 +203,8 @@ function makeGrid(){
 
 	grid = [];
 	
-	if(res > 0){
-		gridResolution(res);
+	if(columns > 0){
+		gridResolution(columns);
 
 		for(var i = 0; i < xPositions.length; i++){
 			var sX = xPositions[i];

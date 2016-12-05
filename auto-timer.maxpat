@@ -44,7 +44,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 96.0, 32.5, 85.0, 33.0 ],
-					"presentation_rect" : [ -0.25, 60.833374, 0.0, 0.0 ],
 					"style" : "",
 					"text" : "This is for debugging"
 				}
@@ -98,7 +97,7 @@
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 258.625, 341.833374, 50.0, 22.0 ],
 					"style" : "",
-					"text" : "240"
+					"text" : "180"
 				}
 
 			}
@@ -401,7 +400,7 @@
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 398.5, 445.333374, 50.0, 22.0 ],
 					"style" : "",
-					"text" : "480."
+					"text" : "360."
 				}
 
 			}
@@ -504,9 +503,9 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
-					"patching_rect" : [ 278.625, 43.0, 114.0, 22.0 ],
+					"patching_rect" : [ 278.625, 43.0, 121.0, 22.0 ],
 					"style" : "",
-					"text" : "metro 8n @active 1"
+					"text" : "metro 32n @active 1"
 				}
 
 			}
@@ -880,8 +879,8 @@
 		"styles" : [ 			{
 				"name" : "newobjYellow-1",
 				"default" : 				{
-					"fontsize" : [ 12.059008 ],
-					"accentcolor" : [ 0.82517, 0.78181, 0.059545, 1.0 ]
+					"accentcolor" : [ 0.82517, 0.78181, 0.059545, 1.0 ],
+					"fontsize" : [ 12.059008 ]
 				}
 ,
 				"parentstyle" : "",

@@ -1,3 +1,4 @@
-0, default;
+0, single;
 1, random;
-2, organized;
+2, horizontal;
+3, vertical;

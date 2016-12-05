@@ -96,8 +96,10 @@ function Character(xPos, yPos, size, type){
 	this.easing = false;
 	this.flashing = false;
 	this.rotating = false;
-	this.dying = true;
-	
+	this.fading = true; // objects are all fading by default causing lifespan to decrease and disappear from the window
+	this.bouncing = false;
+	this.freq = 1;
+
 	this.size = size;
 	this.type = type;
 	this.ease = 0.2;
@@ -107,6 +109,8 @@ function Character(xPos, yPos, size, type){
 	this.location.x = xPos;
 	this.location.y = yPos;	
 	this.target = Object.create(Vector);
+	this.target.x = xPos;
+	this.target.y = yPos;	
 
 	this.rotation = 0;
 	this.color = Object.create(Color);
@@ -122,7 +126,7 @@ Character.prototype.display = function(){
 	// In general, the order of transformations is critical.
 	// Also:
 	// mySketch.moveto(0, 0, 0); is used below to center the composition on x,y 0,0.
-
+	this.freq = lfoFreq();
 	mySketch.glpushmatrix();
 	var alpha = this.lifespan / 255.0;
 	mySketch.glcolor(this.color.r, this.color.g, this.color.b, alpha);
@@ -131,8 +135,18 @@ Character.prototype.display = function(){
 	switch(this.type) {
 	    case "round":
 	    	mySketch.gltranslate(this.location.x, this.location.y, 0);
+			mySketch.shapeslice(50);
 			mySketch.moveto(0, 0, 0);
 			mySketch.circle(this.size / 2);
+	        break;
+
+	     case "hexagon":
+	    	mySketch.gltranslate(this.location.x, this.location.y, 0);
+			mySketch.shapeslice(6);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.moveto(0, 0, 0);
+			// mySketch.gllinewidth(10);
+			mySketch.framecircle(this.size / 2);
 	        break;
 
 	    case "rect":
@@ -223,7 +237,15 @@ Character.prototype.update = function(){
 	if(this.rotating){
 		this.rot();		
 	}
-	if(this.dying){
+	if(this.bouncing){
+		this.bounce();
+		// var tsk = new Task(this.bounce, this); // our main task
+		// // tsk.execute(); // run our task function once
+		// tsk.interval = 100000;
+		// tsk.repeat();
+		// // tsk.cancel(); // cancel our task
+	}
+	if(this.fading){
 		this.lifespan -= 15;
 	}
 }
@@ -262,6 +284,17 @@ Character.prototype.rot = function(){
 	this.rotation += 1;
 }
 
+var testinc = 0.2
+
+Character.prototype.bounce = function(){
+	// post("testinc: " + testinc + "\n");
+	// post("this.location.y: " + this.location.y + "\n");
+	if(clock % this.freq == 0){
+		this.location.y = this.location.y + testinc;	
+		testinc = testinc * -1;
+	}
+}
+
 
 
 //====================================
@@ -279,21 +312,18 @@ function addAndPosition(layer, type, layout, quantity, size){
 	
 	switch(layout){
 
-		case "default":
-			// for(var i = 0; i < quantity; i++){
-				// will create a number of objects all placed at the default coordinates
-				var xPos = 0;
-				var yPos = 0;
-				var newSize = 0;
+		case "single":
+			// maybe for primadonna?
+			// will create one object placed at the default coordinates
+			var xPos = 0;
+			var yPos = 0;
 
-				if(windowWidth < windowHeight){
-					newSize = windowWidth / 2;
-				} else if(windowWidth > windowHeight){
-					newSize = windowHeight / 2;
-				}
-
-				addCharactersToLayer(array, xPos, yPos, newSize, type);
-			// }
+			if(windowWidth < windowHeight){
+				newSize = windowWidth / 2;
+			} else if(windowWidth > windowHeight){
+				newSize = windowHeight / 2;
+			}
+			addCharactersToLayer(array, xPos, yPos, 10, type);
 		break;
 
 		case "random":
@@ -305,41 +335,75 @@ function addAndPosition(layer, type, layout, quantity, size){
 			}
 		break;
 
-		case "organized":
+		case "horizontal":
 			for(var i = 0; i < quantity; i++){
-				// will arrange objects on the grid forming an organized group
-				
-				// var xElements = ;
-				// var yElements = ;
-				var xElements = Math.floor(Math.sqrt(quantity));
-				var yElements = Math.ceil(Math.sqrt(quantity));
+				var xPos = increment * ((Math.random() * horizontalRes) - (horizontalRes / 2));
+				var yPos = 0;
+				addCharactersToLayer(array, xPos, yPos, size, type);
+			}
+		break;
 
-				// for(){
-				// 	increment y
-				// 	for(){
-				// 		increment x
-				// 	}
-				// }
+		case "vertical":
+			for(var i = 0; i < quantity; i++){
+				var xPos = 0;
+				var yPos = increment * ((Math.random() * verticalRes) - (verticalRes / 2));
 				addCharactersToLayer(array, xPos, yPos, size, type);
 			}
 		break;
 
 		default:
-			// adding this as a duplicate of the default above in case of errors in the layouts.txt file
-			for(var i = 0; i < quantity; i++){
-				// will create a number of objects all placed at the default coordinates
-				var xPos = 0;
-				var yPos = 0;
-				addCharactersToLayer(array, xPos, yPos, size, type);
-			}
 	}
-
-	// post(numberOfCharacters + " should be " + xElements + " x " + yElements + "\n");
-	// post("\n");
-
-	// post(layer + " has: " + quantity + " charaters of " + type + " type." + "\n");
-	// post("\n");
 }
+
+function boundsBuider(section){
+	// one column
+	// var widths = [winL, winR];
+	// two columns
+	// var widths = [winL, 0, winR];
+	// four colums
+	// var widths = [winL, winL/2, 0, winR/2, winR];
+	// eight colums
+	// var widths = [winL, 3*(winL/4), winL/4, 0, winR/4, 3*(winR/4), winR];
+
+	var widths = [winL, winL/2, 0, winR/2, winR];
+	var left;
+	var right;
+
+	// whole
+	left = widths[0];
+	right = widths[4];
+
+	// section 1/2
+	left = widths[0];
+	right = widths[2];
+	// section 2/2
+	left = widths[2];
+	right = widths[4];
+
+
+	// section 1/4
+	left = widths[0];
+	right = widths[1];
+	// section 2/4
+	left = widths[1];
+	right = widths[2];
+	// section 3/4
+	left = widths[2];
+	right = widths[3];
+	// section 4/4
+	left = widths[3];
+	right = widths[4];
+
+
+
+	var heights = [winB, winT];
+
+	// post(widths)
+	// section 1
+	// section 2
+}
+
+boundsBuider();
 
 function addCharactersToLayer(layer, x, y, size_multiplier, t){
 	// given that having a size of zero would make the shape invisible and therefore resul useless, I'm using 0 to enable randomization of size
@@ -371,10 +435,14 @@ function noAction(){
 
 function rotate(layer, velocity){
 	var array = getArrayForLayer(layer);
+	// enable sustain to maintain image on screen for as long as pad is pressed
+	sustain(layer, velocity);
 	// do the following only if the array is populated to avoid errors
 	if(array.length > 0){
 		for(var i = 0; i < array.length; i++){
-			if(velocity > 0){
+			if(velocity > 0){		
+				// recover lifespan
+				recoverLifespan(array[i]);
 				array[i].rotating = true;
 			} else if (velocity == 0) {
 				if (array[i].rotation % 45 != 0){
@@ -386,28 +454,61 @@ function rotate(layer, velocity){
 	}
 }
 
+function flip(layer, velocity){
+	var array = getArrayForLayer(layer);
+	// enable sustain to maintain image on screen for as long as pad is pressed
+	sustain(layer, velocity);
+	// do the following only if the array is populated to avoid errors
+	if(array.length > 0 && velocity > 0){
+		for(var i = 0; i < array.length; i++){
+			// recover lifespan
+			recoverLifespan(array[i]);
+			array[i].rotation += 45;
+		}
+	}
+}
 
+function bounce(layer, velocity){
+	var array = getArrayForLayer(layer);
+	// enable sustain to maintain image on screen for as long as pad is pressed
+	sustain(layer, velocity);
+	// do the following only if the array is populated to avoid errors
+	if(array.length > 0){
+		for(var i = 0; i < array.length; i++){
+			if(velocity > 0){		
+				// recover lifespan
+				recoverLifespan(array[i]);
+				// array[i].freq = lfoFreq();
+				array[i].easing = false
+				array[i].bouncing = true;
+			} else if (velocity == 0) {
+				array[i].bouncing = false;
+			}
+		}
+	}
+}
+
+function recoverLifespan(layer){
+	layer.lifespan = 255;	
+}
 
 function makeStep(layer, velocity, orientation, ease){
 	// go get the right array for the layer I want to interact with
 	var array = getArrayForLayer(layer);
+	// enable sustain to maintain image on screen for as long as pad is pressed
+	sustain(layer, velocity);
 	// create to variables to which then assign x and y steps
 	var xStep;
 	var yStep;
-
-	sustain(layer, velocity);
-
 	// do the following only if the array is populated to avoid errors
 	if(array.length > 0 && velocity > 0){
 		// go through each element in the array
 		for(var i = 0; i < array.length; i++){
 			// recover lifespan
-			array[i].lifespan = 255;
+			recoverLifespan(array[i]);
 			// disable easing
 			array[i].easing = ease;
 			array[i].ease = velocity / 128;
-
-			
 
 			switch(orientation){
 				case "horizontal":
@@ -426,9 +527,8 @@ function makeStep(layer, velocity, orientation, ease){
 					yStep = positions[Math.floor((Math.random() * 2))];
 				break;
 				case "center":
-					if(array[i].location.x == 0){
-						array[i].location.x = positions[Math.floor((Math.random() * 2))];
-					}
+						array[i].target.x = positions[Math.floor((Math.random() * 2))] * (Math.random() * horizontalRes / 2);
+						array[i].location.x = array[i].target.x;
 					xStep = -array[i].target.x;
 					yStep = 0;
 			    default:
@@ -457,15 +557,15 @@ function makeStep(layer, velocity, orientation, ease){
 	}
 }
 
+// sustain: allows to maintain image on screen for as long as pad is pressed
 function sustain(layer, velocity){
 	// go get the right array for the layer I want to interact with
 	var array = getArrayForLayer(layer);
-
 	for(var i = 0; i < array.length; i++){
 		if(velocity > 0){
-			array[i].dying = false;
+			array[i].fading = false;
 		} else {
-			array[i].dying = true;
+			array[i].fading = true;
 		}
 	}
 }
@@ -511,6 +611,32 @@ function appear(layer, velocity){
 	}
 }
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
+// UNCOMMENT THIS METHOD CALL INSIDE DRAW() TO MAKE IT WORK 
+function displace(){
+	// var array = getArrayForLayer(layer);
+	// enable sustain to maintain image on screen for as long as pad is pressed
+	// sustain(layer, velocity);
+	// do the following only if the array is populated to avoid errors
+	if(layer1.length > 0){
+		for(var i = 0; i < layer1.length; i++){
+			if(dial2 > 0){		
+				// recover lifespan
+				recoverLifespan(layer1[i]);
+				var distance = layer1[i].size * high;
+				// layer1[i].location.y = layer1[i].location.y + (distance - (distance / 2);
+				layer1[i].size = layer1[i].size * (1 + high);
+				post(high + "\n");
+			} else if (dial2 == 0) {
+				// if (array[i].rotation % 45 != 0){
+					// array[i].rotation += 45 - (array[i].rotation % 45);
+				// } 
+				// array[i].rotating = false;
+			}
+		}
+	}
+}
+
 function stepRandomly(layer, velocity){
 	makeStep(layer, velocity, "both", false);
 }	
@@ -523,9 +649,9 @@ function stepHorizontally(layer, velocity){
 	makeStep(layer, velocity, "horizontal", false);
 }	
 
-function stepToCenter(layer, velocity){
-	makeStep(layer, velocity, "center", false);
-}
+// function stepToCenter(layer, velocity){
+// 	makeStep(layer, velocity, "center", false);
+// }
 
 function easeRandomly(layer, velocity){
 	makeStep(layer, velocity, "both", true);
