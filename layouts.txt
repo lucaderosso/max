@@ -1,4 +1,0 @@
-0, single;
-1, random;
-2, horizontal;
-3, vertical;

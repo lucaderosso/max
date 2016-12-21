@@ -19,17 +19,6 @@ autowatch = 1;
 
 include("utilities");
 include("characters");
-include("spores");
-
-// dials controlled by user
-var dial0 = 0;
-var dial1 = 0;
-var dial2 = 0;
-var dial3 = 0;
-var dial4 = 0;
-var dial5 = 0;
-var dial6 = 0;
-var dial7 = 0;
 
 // low mid high levels coming from the DSP Values M4L device in the same track as this one.
 var low = 0;
@@ -37,9 +26,13 @@ var mid = 0;
 var high = 0;
 
 // create two x to display at the top and bottom of the projection 
-var topStatus = new Character(0, 0.9375, 0.005, "x");
-var bottomStatus = new Character(0, -0.9375, 0.005, "x");
+var topStatus = new Character(0, 0.9375, 0, 0, 0, 0, 0.01, "x--");
+var bottomStatus = new Character(0, -0.9375, 0, 0, 0, 0, 0.01, "x--");
 var progressBar = new Line(winL, winB, winR, winB, 20, 1);
+topStatus.fading = false;
+bottomStatus.fading = false;
+topStatus.lifespan = 255;
+bottomStatus.lifespan = 255;
 
 
 
@@ -47,8 +40,7 @@ var progressBar = new Line(winL, winB, winR, winB, 20, 1);
 //		Setup
 //==================
 
-makeGrid(); // build a grid that draw() will display
-generate(4); // generate batch of particles
+newGrid(8); // build a grid that draw() will display
 
 
 
@@ -63,10 +55,10 @@ function transport(l, m, h){
 	high = h;
 }
 
-function lfoFreq(){
+function lfoFreq(value){
 	// var freqs = [2, 4, 8, 16, 32];
 	var freqs = [32, 16, 8, 4, 2, 1];
-	var freq = freqs[dial0];
+	var freq = freqs[value];
 	// post("freq: " + freq + "\n");
 	return freq;
 }
@@ -79,8 +71,8 @@ function levels(l, m, h){
 }
 
 function dialsValues(d0, d1, d2, d3, d4, d5, d6, d7){
-	// update valued for dials controlled by user
-	dial0 = d0; //used for lfo frequency
+	
+	dial0 = d0;
 	dial1 = d1;
 	dial2 = d2;
 	dial3 = d3;
@@ -88,10 +80,20 @@ function dialsValues(d0, d1, d2, d3, d4, d5, d6, d7){
 	dial5 = d5;
 	dial6 = d6;
 	dial7 = d7;
+
+	// assign dials to the method they should run
+	lfoFreq(d1);
+	gridIntensity(d1);
+	updateLifeDecay(d2);
+	// d3
+	// d4
+	// d5
+	// d6
+	background(d7);
 }
 
-function background(){
-	myRender.erase_color = [dial7, dial7, dial7, 1-(dial7 * 2)];
+function background(value){
+	myRender.erase_color = [value/2, value/2, value/2, 1-(value * 2)];
 }
 
 function updateProgressBar(timeLeft, totalTime){
@@ -99,16 +101,6 @@ function updateProgressBar(timeLeft, totalTime){
 }
 
 
-tsk = new Task(repeater_function, this);
-tsk.interval = 1000; // every second
-tsk.repeat();  // do it 3 times
-// Here is a repeater function that posts its iteration count to the Max window:
-var flag = false;
-
-function repeater_function(){
-	flag = true;
-	flag = false;
-}
 
 //==================
 //		Draw
@@ -117,11 +109,6 @@ function repeater_function(){
 var clock = 1;
 
 function draw(){
-	// tsk.interval = 100000;
-	// tsk.repeat(10);
-
-	// post("flag: " + flag + "\n");
-
 
 	if (clock <= 32){
 		clock += 1;		
@@ -129,11 +116,6 @@ function draw(){
 		clock = 1;
 	}
     
-    // post(clock + "\n");
-
-	if(clock > 100){
-		clock = 1;
-	}
 
 	if(layer1.length > 0){
 		for(var i = 0; i < layer1.length; i++){
@@ -165,21 +147,13 @@ function draw(){
 		}
 	}
 
-	// if(particles.length > 0){
-	// 	for(var i = 0; i < particles.length; i++){
-	// 		particles[i].run();
-	// 	}
-	// }
-
 	topStatus.run();
-	bottomStatus.run();
+	// bottomStatus.run();
 	progressBar.run();
 
-	background();
-	gridIntensity();
+	// gridIntensity();
 	viewPort();
-	
-	shockLifespan(dial2);
+
 
 	myRender.erase();
 	myRender.drawswap();

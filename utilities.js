@@ -9,12 +9,6 @@
 
 // SETTING UP WINDOW, RENDER AND SKETCH OBJECTS
 
-var myMatrix = new JitterMatrix("textureMatrix", 4, "char", 128, 128);
-
-var myMovie = new JitterObject("jit.movie", 128, 128);
-myMovie.read("alpha-blur-B.png");
-myMovie.matrixcalc(myMatrix, myMatrix);
-
 var myWindow = new JitterObject("jit.window", "video-window"); //
 myWindow.floating = 0;
 myWindow.size = [300, 600];
@@ -42,9 +36,8 @@ var mySecondSketch = new JitterObject("jit.gl.sketch", "video-window");
 mySecondSketch.blend_enable = 1; //because we are working with transparency
 mySecondSketch.antialias = 1;
 mySecondSketch.tex_map = 0; //the onli one that allows the texture to scale with the object 
-mySecondSketch.texture = ["myTexture"];
 
-var viewPortStatus = 1;
+var viewPortStatus = 0;
 var xPositions = [];
 var yPositions = [];
 var grid = [];
@@ -61,14 +54,20 @@ var winT = heightRatio; // window top cohordinate
 
 var windowWidth = Math.abs(winL) + winR;
 var windowHeight = Math.abs(winB) + winT;
+post("windowWidth: " + windowWidth + "\n");
+var verticalSubdivision;
+var increment;
+var horizontalRes;
+var verticalRes;
 
-var columns = 16; // grid resolutio is expressed in how many cells to display horizontaly, vertical count will be calculated accordingly
-var increment = windowWidth / columns;
-
-var horizontalRes = windowWidth / increment;
-var verticalRes = windowHeight / increment;
-
-
+function newGrid(i){
+	verticalSubdivision = i; // vertical subdivision is expressed in how many cells to display horizontaly, vertical count will be calculated accordingly
+	increment = windowWidth / verticalSubdivision;
+	horizontalRes = windowWidth / increment;
+	verticalRes = windowHeight / increment;
+	// post("increment: " + increment + "\n");
+	makeGrid(verticalSubdivision);
+}
 
 var Vector = {
 	x: 0.0,
@@ -158,20 +157,19 @@ function viewPort(){
 	} else {
 		mySketch.glcolor(0, 0, 0, 1);
 		mySketch.moveto(-1.5, 1);
-		// mySketch.plane(1, 2);
+		mySketch.plane(1, 2);
 		mySketch.moveto(1.5, 1);
-		// mySketch.plane(1, 2);
+		mySketch.plane(1, 2);
 		myRender.axes = 0;
 	}
 }
 
-
-function gridResolution(columns){
+function gridResolution(subdivision){
 	xPositions = [];
 	yPositions = [];
 
 	// if (withRatio > heightRatio){
-	var wIncrement = windowWidth / columns;		
+	var wIncrement = windowWidth / subdivision;		
 	// } else if (withRatio <= heightRatio){
 	// 	var wIncrement = windowWidth / wRes;
 	// }
@@ -185,7 +183,7 @@ function gridResolution(columns){
 	// post("\n");
 	// post("\n");
 
-	for(var i = 0; i <= columns; i++){
+	for(var i = 0; i <= subdivision; i++){
 		var xVal = (wIncrement * i) - (windowWidth / 2);
 		xPositions.push(xVal);
 	}
@@ -199,12 +197,12 @@ function gridResolution(columns){
 	// post("yPositions: " + yPositions + "\n");
 }
 
-function makeGrid(){
+function makeGrid(verticalSubdivision){
 
 	grid = [];
 	
-	if(columns > 0){
-		gridResolution(columns);
+	if(verticalSubdivision > 0){
+		gridResolution(verticalSubdivision);
 
 		for(var i = 0; i < xPositions.length; i++){
 			var sX = xPositions[i];
@@ -287,12 +285,11 @@ function windowSize(w ,h){
 
 }
 
-function gridIntensity(){
+function gridIntensity(value){
 	if(grid.length > 0){
 		for(var i = 0; i < grid.length; i++){
 			// adding 0.1 so it never goes to 0
-			grid[i].color.a = (high * dial1) + 0.1;
-
+			grid[i].color.a = (high * value) + 0.1;
 		}
 	}
 }
