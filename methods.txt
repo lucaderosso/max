@@ -1,4 +1,0 @@
-0, roam;
-1, base;
-2, rotate;
-3, scale;

@@ -9,7 +9,7 @@
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 563.0, 224.0, 1282.0, 750.0 ],
+		"rect" : [ 893.0, 373.0, 1282.0, 750.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -38,12 +38,51 @@
 		"subpatcher_template" : "",
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-10",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 495.5, 99.0, 148.0, 20.0 ],
+					"presentation_rect" : [ 496.0, 99.0, 0.0, 0.0 ],
+					"style" : "",
+					"text" : "setup scene (1st outlet)"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-8",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 395.0, 99.0, 85.0, 20.0 ],
+					"presentation_rect" : [ 395.0, 99.0, 0.0, 0.0 ],
+					"style" : "",
+					"text" : "Seconds Left"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-7",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 196.0, 84.0, 150.0, 20.0 ],
+					"presentation_rect" : [ 195.0, 132.0, 0.0, 0.0 ],
+					"style" : "",
+					"text" : "Midiparse"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"id" : "obj-14",
 					"maxclass" : "newobj",
 					"numinlets" : 2,
 					"numoutlets" : 2,
 					"outlettype" : [ "bang", "" ],
-					"patching_rect" : [ 242.0, 102.0, 48.0, 22.0 ],
+					"patching_rect" : [ 196.0, 195.0, 48.0, 22.0 ],
 					"style" : "",
 					"text" : "sel 116"
 				}
@@ -56,7 +95,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 4,
 					"outlettype" : [ "int", "int", "int", "int" ],
-					"patching_rect" : [ 242.0, 62.0, 50.5, 22.0 ],
+					"patching_rect" : [ 196.0, 155.0, 50.5, 22.0 ],
 					"style" : "",
 					"text" : "key"
 				}
@@ -95,7 +134,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 157.799561, 125.0, 30.0, 30.0 ],
+					"patching_rect" : [ 157.799561, 80.0, 30.0, 30.0 ],
 					"style" : ""
 				}
 
@@ -911,8 +950,8 @@
 		"styles" : [ 			{
 				"name" : "newobjYellow-1",
 				"default" : 				{
-					"accentcolor" : [ 0.82517, 0.78181, 0.059545, 1.0 ],
-					"fontsize" : [ 12.059008 ]
+					"fontsize" : [ 12.059008 ],
+					"accentcolor" : [ 0.82517, 0.78181, 0.059545, 1.0 ]
 				}
 ,
 				"parentstyle" : "",

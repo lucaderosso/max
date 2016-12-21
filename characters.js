@@ -150,7 +150,7 @@ Character.prototype.display = function(){
 	mySketch.gllinewidth(4);
 
 	switch(this.type) {
-	    case "rnd:+":
+	    case "rnd":
 	    	mySketch.gltranslate(this.location.x - increment, this.location.y, 0);
 			mySketch.shapeslice(50);
 			mySketch.glrotate(this.rotation, 0, 0, 1);
@@ -586,17 +586,6 @@ function bounce(layer, velocity){
 	}
 }
 
-// each object has its own increemnt calculated by dividing the 
-
-function roam(layer, velocity){
-	newLocationTarget(layer, velocity, true, "roam");
-}
-
-function base(layer, velocity){
-	newLocationTarget(layer, velocity, true, "reset");
-	newScaleTarget(layer, velocity, true, "reset");
-}
-
 function newLocationTarget(layer, velocity, easeStatus, arrangement){
 	// go get the right array for the layer I want to interact with
 	var array = getArrayForLayer(layer);	
@@ -633,10 +622,6 @@ function newLocationTarget(layer, velocity, easeStatus, arrangement){
 	}
 }
 
-function rotate(layer, velocity){
-	newRotationTarget(layer, velocity, true);
-}
-
 function newRotationTarget(layer, velocity, easeStatus){
 	// go get the right array for the layer I want to interact with
 	var array = getArrayForLayer(layer);
@@ -669,10 +654,6 @@ function newRotationTarget(layer, velocity, easeStatus){
 			}
 		}
 	}
-}
-
-function scale(layer, velocity){
-	newScaleTarget(layer, velocity, true, "scale");
 }
 
 function newScaleTarget(layer, velocity, easeStatus, arrangement){
@@ -761,4 +742,26 @@ function updateLifeDecay(value){
 			layer4[f].lifeDecay = (1 - value + 0.01) * 255;
 		}
 	}		
+}
+
+function callAction(family, type, layer, velocity){
+	// create action name concatenating family and type
+	var action = family.concat(type);
+
+	switch (action){
+		case "resetAll":
+			newLocationTarget(layer, velocity, true, "reset");
+			newScaleTarget(layer, velocity, true, "reset");
+		break;
+		case "translateBoth":
+			newLocationTarget(layer, velocity, true, "roam");
+		break;
+		case "rotateRandom":
+			newRotationTarget(layer, velocity, true);
+		break;
+		case "scaleBoth":
+			newScaleTarget(layer, velocity, true, "scale");
+		break;
+
+	}
 }

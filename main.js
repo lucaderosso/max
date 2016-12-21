@@ -26,8 +26,8 @@ var mid = 0;
 var high = 0;
 
 // create two x to display at the top and bottom of the projection 
-var topStatus = new Character(0, 0.9375, 0, 0, 0, 0, 0.01, "x--");
-var bottomStatus = new Character(0, -0.9375, 0, 0, 0, 0, 0.01, "x--");
+var topStatus = new Character(0, 0.9375, 0, 0, 0, 0, 0.01, "rnd");
+var bottomStatus = new Character(0, -0.9375, 0, 0, 0, 0, 0.01, "rnd");
 var progressBar = new Line(winL, winB, winR, winB, 20, 1);
 topStatus.fading = false;
 bottomStatus.fading = false;
@@ -148,7 +148,7 @@ function draw(){
 	}
 
 	topStatus.run();
-	// bottomStatus.run();
+	bottomStatus.run();
 	progressBar.run();
 
 	// gridIntensity();

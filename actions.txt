@@ -1,0 +1,8 @@
+0, reset All;
+1, reset All;
+2, scale Both;
+3, scale Both;
+4, translate Both;
+5, translate Both;
+6, rotate Random;
+7, rotate Random;
