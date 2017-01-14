@@ -5,7 +5,7 @@
 			"major" : 7,
 			"minor" : 3,
 			"revision" : 1,
-			"architecture" : "x64",
+			"architecture" : "x86",
 			"modernui" : 1
 		}
 ,
@@ -292,7 +292,7 @@
 					"outlettype" : [ "float", "float" ],
 					"patching_rect" : [ 141.600006, 376.0, 103.0, 22.0 ],
 					"style" : "",
-					"text" : "makenote 60 250"
+					"text" : "makenote 60 100"
 				}
 
 			}
@@ -503,8 +503,8 @@
 		"styles" : [ 			{
 				"name" : "newobjYellow-1",
 				"default" : 				{
-					"fontsize" : [ 12.059008 ],
-					"accentcolor" : [ 0.82517, 0.78181, 0.059545, 1.0 ]
+					"accentcolor" : [ 0.82517, 0.78181, 0.059545, 1.0 ],
+					"fontsize" : [ 12.059008 ]
 				}
 ,
 				"parentstyle" : "",

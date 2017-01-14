@@ -16,6 +16,7 @@
 //===================
 
 autowatch = 1;
+outlets = 2;
 
 include("utilities");
 include("characters");
@@ -33,7 +34,6 @@ topStatus.fading = false;
 bottomStatus.fading = false;
 topStatus.lifespan = 255;
 bottomStatus.lifespan = 255;
-
 
 
 //==================
@@ -83,7 +83,6 @@ function dialsValues(d0, d1, d2, d3, d4, d5, d6, d7){
 
 	// assign dials to the method they should run
 	lfoFreq(d1);
-	gridIntensity(d1);
 	updateLifeDecay(d2);
 	// d3
 	// d4
@@ -109,6 +108,8 @@ function updateProgressBar(timeLeft, totalTime){
 var clock = 1;
 
 function draw(){
+	// mySketch.moveto(-1, 0, 0);
+	// mySketch.glrotate(45, 0, 0, 1);
 
 	if (clock <= 32){
 		clock += 1;		
@@ -116,7 +117,8 @@ function draw(){
 		clock = 1;
 	}
     
-
+	// you should consider creating a rule by which only when decay is 255 these loop ar run
+	// this will avoid to have instructions being sent also for layers not displayed
 	if(layer1.length > 0){
 		for(var i = 0; i < layer1.length; i++){
 			layer1[i].run();
@@ -147,17 +149,21 @@ function draw(){
 		}
 	}
 
+	outlet(0, "jit_matrix", myRender);
+	outlet(1, increment); 
+
 	topStatus.run();
 	bottomStatus.run();
 	progressBar.run();
 
-	// gridIntensity();
+	gridIntensity(dial1);
 	viewPort();
 
 
 	myRender.erase();
 	myRender.drawswap();
 
+	
 	// reset the sketch at every frame to avoid to overload the command list 
 	// that's because the sketch object will keep accumulating all the commands at each cycle	
 	mySketch.reset();

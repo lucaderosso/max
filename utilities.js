@@ -8,15 +8,14 @@
 
 
 // SETTING UP WINDOW, RENDER AND SKETCH OBJECTS
-
 var myWindow = new JitterObject("jit.window", "video-window"); //
 myWindow.floating = 0;
-myWindow.size = [600, 600];
+myWindow.size = [300, 600];
 // myWindow.rect = [305, 305];
 myWindow.pos = [0, 50];
 myWindow.fsaa = 1;
 myWindow.floating = 0;
-myWindow.border = 0;
+myWindow.border = 1;
 myWindow.fullscreen = 0;
 myWindow.usedstrect = 1;
 myWindow.depthbuffer = 0; // to enable transparency
@@ -31,6 +30,7 @@ myRender.texture("myTexture", "jit_matrix", "textureMatrix");
 var mySketch = new JitterObject("jit.gl.sketch", "video-window");
 mySketch.blend_enable = 1; //because we are working with transparency
 mySketch.antialias = 1;
+// mySketch.position = [-0.5, 0, 0];
 
 var mySecondSketch = new JitterObject("jit.gl.sketch", "video-window");
 mySecondSketch.blend_enable = 1; //because we are working with transparency
@@ -65,6 +65,7 @@ function newGrid(i){
 	increment = windowWidth / verticalSubdivision;
 	horizontalRes = windowWidth / increment;
 	verticalRes = windowHeight / increment;
+	positions = [-increment, increment];
 	// post("increment: " + increment + "\n");
 	makeGrid(verticalSubdivision);
 }
@@ -107,9 +108,9 @@ function Line(startX, startY, endX, endY, width, opacity){
 	this.endPoint.z = 0;
 
 	this.color = Object.create(Color);
-	this.color.r = 1;
-	this.color.g = 1;
-	this.color.b = 1;
+	this.color.r = 0.7;
+	this.color.g = 0.7;
+	this.color.b = 0.7;
 	this.color.a = opacity;
 
 	this.width = width;
@@ -155,9 +156,9 @@ function viewPort(){
 		mySketch.plane(1, 2);
 		myRender.axes = 1;		
 	} else {
-		mySketch.glcolor(0, 0, 0, 0);
-		// mySketch.moveto(-1.5, 1);
-		// mySketch.plane(1, 2);
+		mySketch.glcolor(0, 0, 0, 1);
+		mySketch.moveto(-1.5, 1);
+		mySketch.plane(1, 2);
 		mySketch.moveto(1.5, 1);
 		mySketch.plane(1, 2);
 		myRender.axes = 0;

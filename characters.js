@@ -26,7 +26,7 @@ var layer4 = [];
 var positions = [-increment, increment];
 var size_multipliers = [0.0625, 0.125, 0.25, 0.5, 1]; // aka 1/16 1/8 1/4 1/2 1 of increment calculated in utilities.js
 
-var decay = 15;
+var decay = 255; // setting 255 (aka sudden decay) because it's my preffered starting setting
 
 //====================================
 //		Methods to manage allLayers
@@ -98,7 +98,8 @@ function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, siz
 	this.moving = false;
 	this.rotating = false;
 	this.scaling = false;
-	
+	this.resizing = false;
+
 	this.type = type;
 	this.ease = 0.2;
 	this.lifespan = 0;
@@ -115,12 +116,25 @@ function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, siz
 	this.boundBottom = bottomBound;
 	this.boundTop = topBound;
 
+	this.boundsWidth = Math.abs(this.boundLeft - this.boundRight);
+	this.boundsHeight = Math.abs(this.boundTop - this.boundBottom);
+
+	this.width = (Math.abs(this.boundRight - this.boundLeft) / 2);
+	this.height = (Math.abs(this.boundTop - this.boundBottom) / 2);
+
 	this.location = Object.create(Vector);
 	this.location.x = xPos;
 	this.location.y = yPos;	
 	this.targetLocation = Object.create(Vector);
 	this.targetLocation.x = xPos;
-	this.targetLocation.y = yPos;	
+	this.targetLocation.y = yPos;
+
+	this.scale = Object.create(Vector);
+	this.scale.x = 1;
+	this.scale.y = 1;
+	this.targetScale = Object.create(Vector);
+	this.targetScale.x = 1;
+	this.targetScale.y = 1;
 
 	this.rotation = 0;
 	this.targetRotation = 0;
@@ -130,9 +144,9 @@ function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, siz
 	this.sizeGenesis = size;
 
 	this.color = Object.create(Color);
-	this.color.r = 1;
-	this.color.g = 1;
-	this.color.b = 1;
+	this.color.r = 0.9;
+	this.color.g = 0.9;
+	this.color.b = 0.9;
 }
 
 Character.prototype.display = function(){
@@ -143,187 +157,195 @@ Character.prototype.display = function(){
 	// Also:
 	// mySketch.moveto(0, 0, 0); is used below to center the composition on x,y 0,0.
 	this.freq = lfoFreq();
-	mySketch.glpushmatrix();
 	var alpha = this.lifespan / 255.0;
 	// var alpha = 255.0;
 	mySketch.glcolor(this.color.r, this.color.g, this.color.b, alpha);
 	mySketch.gllinewidth(4);
 
 	switch(this.type) {
-	    case "rnd":
-	    	mySketch.gltranslate(this.location.x - increment, this.location.y, 0);
-			mySketch.shapeslice(50);
-			mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(increment, 0, 0);
-			mySketch.circle(this.size / 2);
-	        break;
+		// for objects to do something when any pad is pushed they need to include:
+		// this.scale.x
+		// this.scale.y
+		// this.location.x
+		// this.location.y
+		// this.rotation
 
-	    case "rnd:-":
-	    	mySketch.gltranslate(this.locationGenesis.x, this.location.y - increment, 0);
-			mySketch.shapeslice(50);
-			mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(0, increment, 0);
-			mySketch.circle(this.size / 2);
-	        break;
-
-	    case "rnd:|":
-	    	mySketch.gltranslate(this.location.x - increment, this.locationGenesis.y, 0);
-			mySketch.shapeslice(50);
-			mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(increment, 0, 0);
-			mySketch.circle(this.size / 2);
-	        break;    
-
-	    case "hxg":
-	    	mySketch.gltranslate(this.location.x, this.location.y, 0);
-			mySketch.shapeslice(6);
-			mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(0, 0, 0);
-			mySketch.framecircle(this.size/2);
-	        break;
-
-	    case "rct":
-		    mySketch.gltranslate(this.location.x, this.location.y, 0);
+		case "sqr": 
+			//plane centered scaling both directions
+		    mySketch.glpushmatrix();
+		    mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
 	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(0, 0, 0); 
-			// making the width 1/8th of the height
-			mySketch.plane(this.size/16, this.size / 2, this.size/16, this.size / 2);
-	        break;
+			mySketch.moveto(0, 0, 0);
+			mySketch.glscale(this.scale.x, this.scale.y, 1);
+			mySketch.plane(this.width, this.height);
+        	mySketch.glpopmatrix();
+        break;
+
+        case "kld":
+        	// this is and insane kaleidoscopic one.
+        	// when many elements are displayed, they ovelrap in nice composition every 360 degrees.
+        	mySketch.glpushmatrix();
+        	mySketch.gltranslate(this.location.x, this.location.y, 0);
+	    	mySketch.moveto(this.boundLeft + this.width, this.boundBottom + this.height, 0);
+	    	mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.glscale(this.scale.x, this.scale.y, 1);
+			mySketch.plane(this.width, this.height);
+        	mySketch.glpopmatrix();
+        break;
 
 	    case "pln":
-		    var w =  Math.abs(this.boundRight - this.boundLeft) / 2;
-		    var h =  Math.abs(this.boundTop - this.boundBottom) / 2;
-		    mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0);
-		    mySketch.moveto(0, -this.location.y, 0);
+	    	// creates bars where the bottom side is fixed and the top one scales
+		    mySketch.glpushmatrix();
+		    mySketch.gltranslate(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.plane(this.width, this.height * this.scale.y); // putting scale.y here to avoid using glscale
+        	mySketch.glpopmatrix();
+        break;
+
+        case "dtt":
+        	mySketch.glpushmatrix();
+        	mySketch.glenable("line_stipple"), 
+        	mySketch.gllinestipple(1, 32639); // 0011111100111111 - 0111111101111111
+		    mySketch.gltranslate(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
 	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.plane(w, this.location.y, w, this.location.y);
-	        break;   
+			mySketch.glscale(this.scale.x, this.scale.y, 1.);
+			mySketch.framequad(this.width, this.height, 0, this.width, -this.height, 0, -this.width, -this.height, 0, -this.width, this.height, 0);
+	    	// mySketch.moveto(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0);
+	    	mySketch.glpopmatrix();
+	    	mySketch.glpushmatrix();
+	    	// mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.gltranslate(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
+			mySketch.circle(0.01);
+			mySketch.glpopmatrix();
+        break;
+
+        case "rtt": // old rect
+	        mySketch.glpushmatrix();
+		    mySketch.gltranslate(this.location.x, this.location.y, 0);
+	    	mySketch.glrotate(this.rotation/2, 0, 0, 1);
+			mySketch.glscale(this.scale.x * 4, 1, 1);
+			// making the width 1/8th of the height
+			mySketch.plane(this.width/4, this.height);
+        	mySketch.glpopmatrix();
+        break;
+
+        case "sq_":
+        	// to fix
+        	mySketch.glpushmatrix();
+			mySketch.glscale(this.scale.x, this.scale.y, 1);
+		    mySketch.glrotate(this.rotation, 0, 0, 1);
+		    mySketch.gltranslate(this.location.x, this.location.y, 0);
+			mySketch.moveto(0, 0, 0); 
+			mySketch.plane(this.width, this.height);
+       		mySketch.glpopmatrix();
+        break;
+
+        case "seg":
+        	mySketch.glpushmatrix();
+			mySketch.glscale(this.scale.x, 1, 1);
+			mySketch.glrotate(this.rotation, 0, 0, -1);
+			mySketch.linesegment(this.location.x - this.width, this.location.y, 0, this.location.x + this.width, this.location.y, 0);
+        	mySketch.glpopmatrix();
+        break;
+
+        case "dsg":
+        	// dsg aka double segment: similar to segment but it creates nice 45degrees compositions when rotating
+			mySketch.glpushmatrix();
+			mySketch.glrotate(this.rotation/2, 0, 0, 1);
+			mySketch.glscale(this.scale.x, 1, 1);
+			mySketch.linesegment(this.location.x - this.width, this.location.y, 0, this.location.x + this.width, this.location.y, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.linesegment(this.location.x - this.width, this.location.y, 0, this.location.x + this.width, this.location.y, 0);
+        	mySketch.glpopmatrix();
+        break;
+
+	  //   case "rnd":
+	  //   	mySketch.gltranslate(this.location.x - increment, this.location.y, 0);
+			// mySketch.shapeslice(50);
+			// mySketch.glrotate(this.rotation, 0, 0, 1);
+			// mySketch.moveto(increment, 0, 0);
+			// mySketch.circle(this.size / 2);
+	  //       break;
+
+	  //   case "rnd:-":
+	  //   	mySketch.gltranslate(this.locationGenesis.x, this.location.y - increment, 0);
+			// mySketch.shapeslice(50);
+			// mySketch.glrotate(this.rotation, 0, 0, 1);
+			// mySketch.moveto(0, increment, 0);
+			// mySketch.circle(this.size / 2);
+	  //       break;
+
+	  //   case "rnd:|":
+	  //   	mySketch.gltranslate(this.location.x - increment, this.locationGenesis.y, 0);
+			// mySketch.shapeslice(50);
+			// mySketch.glrotate(this.rotation, 0, 0, 1);
+			// mySketch.moveto(increment, 0, 0);
+			// mySketch.circle(this.size / 2);
+	  //       break;
+
 		
-		case "sqr":
-		    mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0);
-	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(0, this.locationGenesis.y, 0); 
-			mySketch.plane(this.size / 2, this.size + this.location.y, this.size / 2, this.size + this.location.y);
-	        break;
+
+	    case "pin":
+	    	mySketch.glpushmatrix();
+			mySketch.linesegment(this.locationGenesis.x, this.boundTop, 0, this.location.x, this.location.y, 0);
+			// mySketch.linesegment(this.locationGenesis.x, this.boundTop, 0, -1 * this.location.x, -1 * this.location.y, 0);
+   		    // mySketch.gltranslate(this.location.x, this.location.y, 0);
+   		    // mySketch.moveto(this.location.x, this.location.y, 0); 	
+			mySketch.glscale(this.scale.x, this.scale.y, 1);
+			mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0);
+			mySketch.shapeslice(4); 
+	        mySketch.circle(0.1);
+	        mySketch.glpopmatrix();
+        break;
 
 	    case "x--":
+	    	mySketch.glpushmatrix();
 	    	mySketch.gltranslate(this.location.x, this.location.y, 0);
 	    	mySketch.glrotate(this.rotation, 0, 0, 1);
 	    	// dividing size by 2 becasue linesegments takes coordinates which would make it double the size otherwise
 			mySketch.linesegment(-this.size/2, -this.size/2, 0, this.size/2, this.size/2, 0);
 			mySketch.linesegment(-this.size/2, this.size/2, 0, this.size/2, -this.size/2, 0);
-	        break;
+        	mySketch.glpopmatrix();
+        break;
 
 	    case "rl-":
+	    	mySketch.glpushmatrix();
 			mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
+	    	mySketch.glrotate(this.rotation, 0, 0, 1);
 			mySketch.linesegment(-this.size, 0, 0, this.size, 0, 0);
-			mySketch.linesegment(this.size * this.location.x, this.size/8, 0, this.size * this.location.x, -this.size/8, 0);
-	        break;
+			mySketch.linesegment(this.location.x, this.size/8, 0, this.location.x, -this.size/8, 0);
+        	mySketch.glpopmatrix();
+        break;
 
 	    case "a_l":
+	    	mySketch.glpushmatrix();
 	    	var w = this.boundRight - this.boundLeft;
 		    mySketch.gltranslate(this.locationGenesis.x + -this.size, this.locationGenesis.y, 0);
 		    // mySketch.glrotate(45, 0., 0., 1.);
 		    mySketch.glscale(this.size, 0, 0);
 			mySketch.linesegment(this.boundLeft, 0, 0, this.boundRight, 0, 0);
-			break;
+			mySketch.glpopmatrix();
+		break;
 
 		case "v_l":
+			mySketch.glpushmatrix();
 		    mySketch.gltranslate(this.location.x, 0, 0);
 			mySketch.linesegment(0, this.boundBottom, 0, 0, this.boundTop, 0);
-			break;	
+			mySketch.glpopmatrix();
+		break;	
 
 		case "h_l":
+			mySketch.glpushmatrix();
 			var w =  Math.abs(this.boundRight - this.boundLeft) / 2;
 		    
 		 //    mySketch.gltranslate(0, this.location.y, 0);
 			// mySketch.linesegment(this.boundLeft, 0, 0, this.boundRight, 0, 0);	
 			// mySketch.glrotate(this.rotation, 0, 0, 1);
 		    mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
-			mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.glrotate(this.rotation/2, 0, 0, 1);
 			// mySketch.moveto(w, 0, 0);
 			mySketch.plane(w, 0.005, w, 0.005);	
-	        break;
-
-	    //////////////////
-	    // Primadonnas? //
-	    //////////////////
-	    case "crc":
-	    	mySketch.gltranslate(this.location.x, this.location.y, 0);
-			mySketch.shapeslice(50);
-			mySketch.moveto(0, 0, 0);
-			mySketch.circle(this.size/2);
-			mySketch.glcolor(0, 0, 0, alpha);
-			mySketch.circle(this.size/4);
-	        break;
-
-	    case "pd1":
-	    	mySketch.gltranslate(0, 0, 0);
-			// mySketch.shapeslice(50);
-			// mySketch.moveto(0, 0, 0);
-			// mySketch.circle(this.size/2);
-			// mySketch.glcolor(0, 0, 0, alpha);
-			// mySketch.circle(this.size/4);
-			// mySketch.gltranslate(this.boundLeft/2 + this.location.x, 0, 0);
-			mySketch.moveto(this.boundLeft/2, 0, 0);
-			mySketch.plane(this.sizeGenesis / 2, this.sizeGenesis / 2 * this.size, this.sizeGenesis / 2, this.sizeGenesis / 2 * this.size);
-
-			mySketch.gltranslate(this.boundRight, 0, 0);
-			mySketch.plane(this.sizeGenesis / 2, this.sizeGenesis / 2 * this.size, this.sizeGenesis / 2, this.sizeGenesis / 2 * this.size);
-			
-			mySketch.gltranslate(-this.boundRight / 2, this.boundTop / 2, 0);
-			mySketch.plane(this.sizeGenesis / 2, this.sizeGenesis / 2, this.sizeGenesis / 2, this.sizeGenesis / 2);
-			
-			mySketch.gltranslate(0, this.boundBottom, 0);
-			mySketch.plane(this.sizeGenesis / 2, this.sizeGenesis / 2, this.sizeGenesis / 2, this.sizeGenesis / 2);
-	        break;
-
-	    case "arc":
-	    	mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0);
-	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(this.location.x, 0, 0);
-			mySketch.shapeslice(60);
-			mySketch.framecircle(0.25);
-	    	// mySketch.cylinder(0.2, 0.3, 0., 0., 90. * this.location.x);
-	    	// mySketch.cylinder(0.2, 0.3, 0., 90., 180. * this.location.x);
-	    	// mySketch.cylinder(0.2, 0.3, 0., 180., 270. * this.location.x);
-	    	// mySketch.cylinder(0.2, 0.3, 0., 270., 360. * this.location.x);
-	    	mySketch.cylinder(0.2, 0.3 + this.location.x, 0., 0., 85.);
-	    	mySketch.cylinder(0.2, 0.3, 0., 90., 175.);
-	    	mySketch.cylinder(0.2, 0.3 + this.location.x, 0., 180., 265.);
-	    	mySketch.cylinder(0.2, 0.3, 0., 270., 355.);
-	    	break;
-
-	    case "str":
-		    mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0);
-	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(this.location.x, 0, 0);
-			mySketch.plane(increment / 2, windowHeight/4 + this.location.x, increment / 2, windowHeight/4 + this.location.x);
-			mySketch.moveto((3 * increment + (this.location.x)), 0, 0);
-			mySketch.plane(increment / 2, windowHeight/4 + this.location.x, increment / 2, windowHeight/4 + this.location.x);
-			mySketch.moveto((-3 * increment + (this.location.x)), 0, 0);
-			mySketch.plane(increment / 2, windowHeight/4 - this.location.x, increment / 2, windowHeight/4 - this.location.x);
-			mySketch.moveto((6 * increment + (this.location.x)), 0, 0);
-			mySketch.plane(increment / 2, windowHeight/4 + this.location.x, increment / 2, windowHeight/4 + this.location.x);
-			mySketch.moveto((-6 * increment + (this.location.x)), 0, 0);
-			mySketch.plane(increment / 2, windowHeight/4 - this.location.x, increment / 2, windowHeight/4 - this.location.x);
-	        mySketch.moveto(0, 0, 0);
-			mySketch.linesegment(winL, 0, 0, winR, 0, 0);
-	        break;
-
-	    case "rzr":
-		    mySketch.gltranslate(this.location.x, 0, 0);
-			mySketch.linesegment(-0.5, -1, 0, -0.5, 1, 0);
-			mySketch.moveto(-windowHeight/2, 0, 0); 
-	        // mySketch.glcolor(0, 0, 0, 1);
-			// mySketch.plane(windowWidth/2, windowHeight/2, windowWidth/2, windowHeight/2);
-
-		    mySketch.gltranslate(-this.location.x, this.location.y, 0);
-		    mySketch.glcolor(1, 1, 1, 1);
-			mySketch.linesegment(-1, 0, 0, 1, 0, 0);
-			mySketch.moveto(0, -windowHeight/2, 0); 
-	        // mySketch.glcolor(0, 0, 0, 1);
-			// mySketch.plane(windowWidth/2, windowHeight/2, windowWidth/2, windowHeight/2);
+			mySketch.glpopmatrix();
 	        break;
 
 	    default:
@@ -331,7 +353,7 @@ Character.prototype.display = function(){
 	    	// i had something here but then removed it because it was constantly displayed... not sure why. I should check the max patch.
 	}
 
-	mySketch.glpopmatrix();
+	mySketch.glflush(); // you starte testing glflus on jan 14, 2017 to see if it would increase performance.
 }
 
 Character.prototype.update = function(){	
@@ -345,7 +367,12 @@ Character.prototype.update = function(){
 	}
 
 	if(this.scaling){
-		this.size = Math.abs(this.easeValue(this.size, this.targetSize, this.scaling));
+		this.scale.x = Math.abs(this.easeValue(this.scale.x, this.targetScale.x, this.scaling));
+		this.scale.y = Math.abs(this.easeValue(this.scale.y, this.targetScale.y, this.scaling));
+	}
+
+	if(this.resizing){
+		this.size = Math.abs(this.easeValue(this.size, this.targetSize, this.resizing));
 	}
 
 	if(this.flashing){
@@ -422,11 +449,6 @@ Character.prototype.bounce = function(){
 
 function addCharactersToLayer(layer, x, y, leftBound, rightBound, bottomBound, topBound, size, t){
 	// given that having a size of zero would make the shape invisible and therefore resul useless, I'm using 0 to enable randomization of size
-	// if(sizeMultiplier == 0){
-	// 	var size = increment * size_multipliers[Math.floor((Math.random() * 4))];		
-	// } else {
-	// 	var size = sizeMultiplier * increment;
-	// }
 	layer.push(new Character(x, y, leftBound, rightBound, bottomBound, topBound, size, t));
 }
 
@@ -468,14 +490,15 @@ function genesis(layer, items, type, size, gridColumns, gridRows){
 		columns = maxColumns;
 	}
 
+	// COMMENTING THIS TEMPORAIRLY CAUSE ITS HANDLED IN MAX
 	// this makes sure there are equal or less items than the available coordinates that will be calculated
-	if(items > (columns * rows)){
-		items = columns * rows;
-	}
+	// if(items > (columns * rows)){
+	// 	items = columns * rows;
+	// }
 
 	// calculate size cap to make sure shapes don't go outside bounds
 	if(rows > columns){
-		// -2 to make sure eaxche grid cell had two gutters og the size if 1 increment on both side
+		// -2 to make sure eaxche grid cell had two gutters of the size if 1 increment on both side
 		sizeCap = (windowHeight / rows / increment) - 2;
 	} else {
 		sizeCap = (windowWidth / columns / increment) - 2;
@@ -483,7 +506,7 @@ function genesis(layer, items, type, size, gridColumns, gridRows){
 	
 	if(sizeCap <= 0){
 		// not proud of this but: doing it to avoid having a cap of 0 which will end up assigning a value of 0 to the updatedSize
-		sizeCap = 1;
+		sizeCap = 2; // 1 would cause it to be centered with the grid lines
 	}
 
 	// calculate x and y position for all items
@@ -516,7 +539,8 @@ function genesis(layer, items, type, size, gridColumns, gridRows){
 	if(items < (columns * rows)){
 		var totalCells = columns * rows;
 		var emptyCells = totalCells - items;
-		index = Math.floor((emptyCells / (Math.floor(Math.random() * 4)+1)));
+		// index = Math.floor((emptyCells / (Math.floor(Math.random() * 4)+1))); // this index calculation allows asymmetry
+		index = emptyCells / 2; // this index calculation creates symmetry
 	}
 
 	// populate array with elements
@@ -549,21 +573,6 @@ function checkSustain(element, velocity){
 		element.fading = false;
 	} else {
 		element.fading = true;
-	}
-}
-
-function flip(layer, velocity){
-	var array = getArrayForLayer(layer);
-	// do the following only if the array is populated to avoid errors
-	if(array.length > 0){ 	
-		for(var i = 0; i < array.length; i++){
-			// enable sustain to maintain image on screen for as long as pad is pressed
-			checkSustain(layer, velocity);
-			
-			if (velocity > 0){
-				array[i].rotation += 45;
-			}
-		}
 	}
 }
 
@@ -607,11 +616,24 @@ function newLocationTarget(layer, velocity, easeStatus, arrangement){
 						var locationX = positions[Math.floor((Math.random() * 2))];
 						var locationY = positions[Math.floor((Math.random() * 2))];
 					break;
+					case "vertical":
+						var locationX = 0;
+						var locationY = positions[Math.floor((Math.random() * 2))];
+					break;
+					case "horizontal":
+						var locationX = positions[Math.floor((Math.random() * 2))];
+						var locationY = 0;
+					break;
 					case "reset":
 						var locationX = -(array[i].targetLocation.x - array[i].locationGenesis.x);
 						var locationY = -(array[i].targetLocation.y - array[i].locationGenesis.y);
 						array[i].rotation = 0;
 						array[i].targetRotation = 0;
+						array[i].scale.x = 1;
+						array[i].scale.y = 1;
+						array[i].targetScale.x = 1;
+						array[i].targetScale.y = 1;
+						// array[i].targetSize = array[i].sizeGenesis;
 					break;
 					default:
 				}
@@ -638,7 +660,7 @@ function newRotationTarget(layer, velocity, easeStatus){
 				// assign ease value
 				array[i].ease = velocity / 128;
 				// pick a position where to send the object
-				var angle = Math.random() > 0.5 ? 45 : 90;
+				// var angle = Math.random() > 0.5 ? 45 : 90;
 				
 				if(array[i].type == "rnd:+" || array[i].type == "rnd:-" || array[i].type == "rnd:|"){
 					var randomDirection = Math.random() > 0.5 ? 1 : -1;
@@ -648,9 +670,49 @@ function newRotationTarget(layer, velocity, easeStatus){
 
 				// check bounds. this also assigns the values to the right object properites
 				array[i].rotation = array[i].targetRotation;
-				array[i].targetRotation += angle * randomDirection;
+				// array[i].targetRotation += angle * randomDirection;
+				array[i].targetRotation += 90 * randomDirection;
 
 
+			}
+		}
+	}
+}
+
+function newSizeTarget(layer, velocity, easeStatus, arrangement){
+	// go get the right array for the layer I want to interact with
+	var array = getArrayForLayer(layer);
+	// do the following only if the array is populated to avoid errors
+	if(array.length > 0){
+		// go through each element in the array
+		for(var i = 0; i < array.length; i++){
+			// enable sustain to maintain image on screen for as long as pad is pressed
+			checkSustain(array[i], velocity);
+			// here starts method's specific logic 
+			if (velocity > 0){	
+				// enable easing for moving
+				array[i].resizing = easeStatus;
+				// assign ease value
+				array[i].ease = velocity / 128;
+				// pick a position where to send the object
+				switch (arrangement){
+					case "scale":
+						// var chosenValue = Math.random() < 0.5 ? -1 : 1;
+						// var newSize = array[i].size + (increment * chosenValue);
+						// newSize = newSize == 0 ? increment * 2 : newSize;
+						var sizeRange = array[i].boundsWidth / increment;
+						var newSize = increment * (Math.ceil(Math.random() * sizeRange));
+
+						// var newSize = size_multipliers[Math.floor(Math.random() * 5)];
+						post(newSize + "\n");
+					break;
+					case "reset":
+						var newSize = array[i].sizeGenesis;
+					break;
+					default:
+				}
+				// check bounds. this also assigns the values to the right object properites
+				array[i].targetSize = newSize;
 			}
 		}
 	}
@@ -673,19 +735,19 @@ function newScaleTarget(layer, velocity, easeStatus, arrangement){
 				array[i].ease = velocity / 128;
 				// pick a position where to send the object
 				switch (arrangement){
-					case "scale":
-						// var chosenValue = Math.random() < 0.5 ? -1 : 1;
-						// var newSize = array[i].size + (increment * chosenValue);
-						// newSize = newSize == 0 ? increment * 2 : newSize;
-						var newSize = size_multipliers[Math.floor(Math.random() * 5)];
-					break;
-					case "reset":
-						var newSize = array[i].sizeGenesis;
+					case "random":
+						var scaleWidthRange = array[i].boundsWidth / increment;
+						var scaleHeightRange = array[i].boundsHeight / increment;
+						// here I'm forcing scale factors to scale the shape so it's always an even multiple of increment
+						// this of course creates issues when the bound width or height are only divisible by 2 increments 
+						var newWidthScale = (Math.ceil( Math.random() * scaleWidthRange / 2 ) * 2) / scaleWidthRange;
+						var newHeightScale = (Math.ceil( Math.random() * scaleHeightRange / 2 ) * 2) / scaleHeightRange;
 					break;
 					default:
 				}
 				// check bounds. this also assigns the values to the right object properites
-				array[i].targetSize = newSize;
+				array[i].targetScale.x = newWidthScale;
+				array[i].targetScale.y = newHeightScale;
 			}
 		}
 	}
@@ -706,40 +768,25 @@ function flash(layer, velocity){
 	}
 }
 
-function appear(layer, velocity){
-	var array = getArrayForLayer(layer);
-	// do the following only if the array is populated to avoid errors
-	if(array.length > 0){
-		for(var i = 0; i < array.length; i++){
-			if(velocity > 0){
-				array[i].lifespan = 255;				
-			} else if(velocity == 0){
-				array[i].lifespan = 0;
-			}
-		}
-	}
-}
-
-
 function updateLifeDecay(value){		
 	if(layer1.length > 0){
 		for(var f = 0; f < layer1.length; f++){
-			layer1[f].lifeDecay = (1 - value + 0.01) * 255;
+			layer1[f].lifeDecay = (1 - value) * 255;
 		}
 	}
 	if(layer2.length > 0){
 		for(var f = 0; f < layer2.length; f++){
-			layer2[f].lifeDecay = (1 - value + 0.01) * 255;
+			layer2[f].lifeDecay = (1 - value) * 255;
 		}
 	}
 	if(layer3.length > 0){
 		for(var f = 0; f < layer3.length; f++){
-			layer3[f].lifeDecay = (1 - value + 0.01) * 255;
+			layer3[f].lifeDecay = (1 - value) * 255;
 		}
 	}
 	if(layer4.length > 0){
 		for(var f = 0; f < layer4.length; f++){
-			layer4[f].lifeDecay = (1 - value + 0.01) * 255;
+			layer4[f].lifeDecay = (1 - value) * 255;
 		}
 	}		
 }
@@ -751,17 +798,24 @@ function callAction(family, type, layer, velocity){
 	switch (action){
 		case "resetAll":
 			newLocationTarget(layer, velocity, true, "reset");
-			newScaleTarget(layer, velocity, true, "reset");
+			// newSizeTarget(layer, velocity, true, "reset");
 		break;
 		case "translateBoth":
 			newLocationTarget(layer, velocity, true, "roam");
 		break;
+		// case "translateVertical":
+		// 	newLocationTarget(layer, velocity, true, "vertical");
+		// break;
+		// case "translateHorizontal":
+		// 	newLocationTarget(layer, velocity, true, "horizontal");
+		// break;
 		case "rotateRandom":
 			newRotationTarget(layer, velocity, true);
 		break;
 		case "scaleBoth":
-			newScaleTarget(layer, velocity, true, "scale");
-		break;
+			// newSizeTarget(layer, velocity, true, "scale");
+			newScaleTarget(layer, velocity, true, "random");
 
+		break;
 	}
 }

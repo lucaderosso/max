@@ -295,7 +295,7 @@
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 258.625, 461.833374, 50.0, 22.0 ],
 					"style" : "",
-					"text" : "60"
+					"text" : "180"
 				}
 
 			}
@@ -598,7 +598,7 @@
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 398.5, 565.333374, 50.0, 22.0 ],
 					"style" : "",
-					"text" : "120."
+					"text" : "360."
 				}
 
 			}
@@ -701,9 +701,9 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
-					"patching_rect" : [ 293.625, 73.0, 121.0, 22.0 ],
+					"patching_rect" : [ 293.625, 73.0, 128.0, 22.0 ],
 					"style" : "",
-					"text" : "metro 32n @active 1"
+					"text" : "qmetro 32n @active 1"
 				}
 
 			}

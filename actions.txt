@@ -3,6 +3,7 @@
 2, scale Both;
 3, scale Both;
 4, translate Both;
-5, translate Both;
-6, rotate Random;
+5, translate Vertical;
+6, translate Horizontal;
 7, rotate Random;
+8, rotate Random;
