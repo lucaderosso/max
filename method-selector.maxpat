@@ -38,6 +38,19 @@
 		"subpatcher_template" : "",
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-9",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 377.0, 823.0, 203.0, 20.0 ],
+					"presentation_rect" : [ 377.0, 823.0, 0.0, 0.0 ],
+					"style" : "",
+					"text" : "famiy | method | layer | velocity"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"bgcolor" : [ 0.92549, 0.364706, 0.341176, 1.0 ],
 					"bgcolor2" : [ 0.92549, 0.364706, 0.341176, 1.0 ],
 					"bgfillcolor_angle" : 270.0,

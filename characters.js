@@ -98,7 +98,6 @@ function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, siz
 	this.moving = false;
 	this.rotating = false;
 	this.scaling = false;
-	this.resizing = false;
 
 	this.type = type;
 	this.ease = 0.2;
@@ -138,10 +137,6 @@ function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, siz
 
 	this.rotation = 0;
 	this.targetRotation = 0;
-
-	this.size = size;
-	this.targetSize = size;
-	this.sizeGenesis = size;
 
 	this.color = Object.create(Color);
 	this.color.r = 0.9;
@@ -371,10 +366,6 @@ Character.prototype.update = function(){
 		this.scale.y = Math.abs(this.easeValue(this.scale.y, this.targetScale.y, this.scaling));
 	}
 
-	if(this.resizing){
-		this.size = Math.abs(this.easeValue(this.size, this.targetSize, this.resizing));
-	}
-
 	if(this.flashing){
 		this.flash();		
 	}
@@ -467,60 +458,43 @@ function checkColumns(columns, rows){
 
 function genesis(layer, items, type, size, gridColumns, gridRows){
 	var array = prepareArrayForLayer(layer);
+	
 	var columnsAndRows = checkColumns(gridColumns, gridRows);
 	var columns = columnsAndRows[0];
 	var rows = columnsAndRows[1];
+	var totalCells = columns * rows;
 
-	var maxColumns = windowWidth / increment / 2;
+	// var maxColumns = windowWidth / increment / 2;
 
 	var colPace = (windowWidth / columns) / 2;
 	var rowPace = (windowHeight / rows) / 2;
 	var multiples = [1, 3, 5, 7, 9, 11, 13, 15];
-	var x = 0;
-	var y = 0;
+
 	var xCoordinates = [];
 	var yCoordinates = [];
 	var leftBounds = [];
 	var rightBounds = [];
 	var bottomBounds = [];
 	var topBounds = [];
-	var sizeCap;
-	
-	if(columns > maxColumns){
-		columns = maxColumns;
-	}
 
-	// COMMENTING THIS TEMPORAIRLY CAUSE ITS HANDLED IN MAX
-	// this makes sure there are equal or less items than the available coordinates that will be calculated
-	// if(items > (columns * rows)){
-	// 	items = columns * rows;
+	var cellsIndex = 0; // defines the starting cell in polulating a grid (eg: grid 2coll 2rows cellsIndex = 1, first element will be in the second cell - bottom right)
+
+	// if(columns > maxColumns){
+	// 	columns = maxColumns;
 	// }
-
-	// calculate size cap to make sure shapes don't go outside bounds
-	if(rows > columns){
-		// -2 to make sure eaxche grid cell had two gutters of the size if 1 increment on both side
-		sizeCap = (windowHeight / rows / increment) - 2;
-	} else {
-		sizeCap = (windowWidth / columns / increment) - 2;
-	}
-	
-	if(sizeCap <= 0){
-		// not proud of this but: doing it to avoid having a cap of 0 which will end up assigning a value of 0 to the updatedSize
-		sizeCap = 2; // 1 would cause it to be centered with the grid lines
-	}
 
 	// calculate x and y position for all items
 	for (var f = 0; f < rows; f++) {
 		// calculate vertical multiplier
 		var verticalMultiplier = multiples[f];		
-		y = winB + (rowPace * verticalMultiplier);
+		var y = winB + (rowPace * verticalMultiplier);
 		var bottom = y - rowPace;
 		var top = y + rowPace;
 
 		for (var g = 0; g < columns; g++) {
 			// calculate horizontal multiplier
 			var horizontalMultiplier = multiples[g];
-			x = winL + (colPace * horizontalMultiplier);
+			var x = winL + (colPace * horizontalMultiplier);
 			var left = x - colPace;
 			var right = x + colPace;	
 			// populate the arrays with all the coordinates calculated
@@ -534,29 +508,17 @@ function genesis(layer, items, type, size, gridColumns, gridRows){
 		}
 	}
 	
-	var index = 0;
-	// offset elements position in grid
-	if(items < (columns * rows)){
-		var totalCells = columns * rows;
+	// check if there is extra room in the grid
+	if(items < totalCells && items > 1){
+		// calculate extra room
 		var emptyCells = totalCells - items;
-		// index = Math.floor((emptyCells / (Math.floor(Math.random() * 4)+1))); // this index calculation allows asymmetry
-		index = emptyCells / 2; // this index calculation creates symmetry
+		// calculate new starting index do that there will be n even number of empty cells at the beginnin and end of the grid
+		cellsIndex = emptyCells / 2;
 	}
 
 	// populate array with elements
-	for (var i = index; i < (items + index); i++) {
-		// calculate size
-		if(size > 0){
-			if(size > sizeCap){
-				var updatedSize = sizeCap * increment;	
-			} else {
-				var updatedSize = size * increment;	
-			}
-		} else if (size == 0){
-			var updatedSize = size_multipliers[Math.floor((Math.random() * 5))] * increment;
-		}
-
-		addCharactersToLayer(array, xCoordinates[i], yCoordinates[i], leftBounds[i], rightBounds[i], bottomBounds[i], topBounds[i], updatedSize, type);					
+	for (var i = cellsIndex; i < (items + cellsIndex); i++) {
+		addCharactersToLayer(array, xCoordinates[i], yCoordinates[i], leftBounds[i], rightBounds[i], bottomBounds[i], topBounds[i], size, type);					
 	}
 }
 
@@ -567,12 +529,21 @@ function genesis(layer, items, type, size, gridColumns, gridRows){
 //=====================================
 
 // sustain: allows to maintain image on screen for as long as pad is pressed
-function checkSustain(element, velocity){
-	if(velocity > 0){
-		element.lifespan = 255; // recover lifespan
-		element.fading = false;
-	} else {
-		element.fading = true;
+function checkSustain(layer, velocity){
+	updateSustainForLayer(layer, velocity);
+	// go get the right array for the layer I want to interact with
+	var array = getArrayForLayer(layer);	
+	// do the following only if the array is populated to avoid errors
+	if(array.length > 0){
+		// go through each element in the array
+		for(var i = 0; i < array.length; i++){
+			if(velocity > 0){
+				array[i].lifespan = 255; // recover lifespan
+				array[i].fading = false;
+			} else {
+				array[i].fading = true;
+			}
+		}
 	}
 }
 
@@ -598,12 +569,12 @@ function bounce(layer, velocity){
 function newLocationTarget(layer, velocity, easeStatus, arrangement){
 	// go get the right array for the layer I want to interact with
 	var array = getArrayForLayer(layer);	
+
+	updateSustainForLayer(array, velocity);
 	// do the following only if the array is populated to avoid errors
 	if(array.length > 0){
 		// go through each element in the array
 		for(var i = 0; i < array.length; i++){
-			// enable sustain to maintain image on screen for as long as pad is pressed
-			checkSustain(array[i], velocity);
 			// here starts method's specific logic 
 			if (velocity > 0){	
 				// enable easing for moving
@@ -651,8 +622,6 @@ function newRotationTarget(layer, velocity, easeStatus){
 	if(array.length > 0){
 		// go through each element in the array
 		for(var i = 0; i < array.length; i++){
-			// enable sustain to maintain image on screen for as long as pad is pressed
-			checkSustain(array[i], velocity);
 			// here starts method's specific logic 
 			if (velocity > 0){	
 				// enable easing for moving
@@ -679,45 +648,6 @@ function newRotationTarget(layer, velocity, easeStatus){
 	}
 }
 
-function newSizeTarget(layer, velocity, easeStatus, arrangement){
-	// go get the right array for the layer I want to interact with
-	var array = getArrayForLayer(layer);
-	// do the following only if the array is populated to avoid errors
-	if(array.length > 0){
-		// go through each element in the array
-		for(var i = 0; i < array.length; i++){
-			// enable sustain to maintain image on screen for as long as pad is pressed
-			checkSustain(array[i], velocity);
-			// here starts method's specific logic 
-			if (velocity > 0){	
-				// enable easing for moving
-				array[i].resizing = easeStatus;
-				// assign ease value
-				array[i].ease = velocity / 128;
-				// pick a position where to send the object
-				switch (arrangement){
-					case "scale":
-						// var chosenValue = Math.random() < 0.5 ? -1 : 1;
-						// var newSize = array[i].size + (increment * chosenValue);
-						// newSize = newSize == 0 ? increment * 2 : newSize;
-						var sizeRange = array[i].boundsWidth / increment;
-						var newSize = increment * (Math.ceil(Math.random() * sizeRange));
-
-						// var newSize = size_multipliers[Math.floor(Math.random() * 5)];
-						post(newSize + "\n");
-					break;
-					case "reset":
-						var newSize = array[i].sizeGenesis;
-					break;
-					default:
-				}
-				// check bounds. this also assigns the values to the right object properites
-				array[i].targetSize = newSize;
-			}
-		}
-	}
-}
-
 function newScaleTarget(layer, velocity, easeStatus, arrangement){
 	// go get the right array for the layer I want to interact with
 	var array = getArrayForLayer(layer);
@@ -725,8 +655,6 @@ function newScaleTarget(layer, velocity, easeStatus, arrangement){
 	if(array.length > 0){
 		// go through each element in the array
 		for(var i = 0; i < array.length; i++){
-			// enable sustain to maintain image on screen for as long as pad is pressed
-			checkSustain(array[i], velocity);
 			// here starts method's specific logic 
 			if (velocity > 0){	
 				// enable easing for moving

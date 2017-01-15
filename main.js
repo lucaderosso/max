@@ -99,6 +99,31 @@ function updateProgressBar(timeLeft, totalTime){
 	progressBar.endPoint.x = (windowWidth * (timeLeft / totalTime)) - winR;
 }
 
+var sustainForLayer1 = false;
+var sustainForLayer2 = false;
+var sustainForLayer3 = false;
+var sustainForLayer4 = false;
+
+function updateSustainForLayer(layer, velocity){	
+	
+	var sustainStatus = velocity > 0 ? true : false;
+	
+	switch (layer){
+		case "layer1":
+			sustainForLayer1 = sustainStatus;
+		break;
+		case "layer2":
+			sustainForLayer2 = sustainStatus;
+		break;
+		case "layer3":
+			sustainForLayer3 = sustainStatus;
+		break;
+		case "layer4":
+			sustainForLayer4 = sustainStatus;
+		break;
+		default:
+	}
+}
 
 
 //==================
@@ -119,25 +144,25 @@ function draw(){
     
 	// you should consider creating a rule by which only when decay is 255 these loop ar run
 	// this will avoid to have instructions being sent also for layers not displayed
-	if(layer1.length > 0){
+	if(layer1.length > 0 && sustainForLayer1 == true){
 		for(var i = 0; i < layer1.length; i++){
 			layer1[i].run();
 		}
 	}
 
-	if(layer2.length > 0){
+	if(layer2.length > 0 && sustainForLayer2 == true){
 		for(var i =	 0; i < layer2.length; i++){
 			layer2[i].run();
 		}
 	}
 
-	if(layer3.length > 0){
+	if(layer3.length > 0 && sustainForLayer3 == true){
 		for(var i = 0; i < layer3.length; i++){
 			layer3[i].run();
 		}
 	}
 
-	if(layer4.length > 0){
+	if(layer4.length > 0 && sustainForLayer4 == true){
 		for(var i = 0; i < layer4.length; i++){
 			layer4[i].run();
 		}
@@ -163,7 +188,7 @@ function draw(){
 	myRender.erase();
 	myRender.drawswap();
 
-	
+
 	// reset the sketch at every frame to avoid to overload the command list 
 	// that's because the sketch object will keep accumulating all the commands at each cycle	
 	mySketch.reset();
