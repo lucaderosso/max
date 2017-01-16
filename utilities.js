@@ -7,69 +7,6 @@
 // Pinterest: pinterest.com/lucaderosso
 
 
-// SETTING UP WINDOW, RENDER AND SKETCH OBJECTS
-var myWindow = new JitterObject("jit.window", "video-window"); //
-myWindow.floating = 0;
-myWindow.size = [300, 600];
-// myWindow.rect = [305, 305];
-myWindow.pos = [0, 50];
-myWindow.fsaa = 1;
-myWindow.floating = 0;
-myWindow.border = 1;
-myWindow.fullscreen = 0;
-myWindow.usedstrect = 1;
-myWindow.depthbuffer = 0; // to enable transparency
-myWindow.fsmenubar = 0;
-
-var myRender = new JitterObject("jit.gl.render", "video-window");
-myRender.erase_color = [0, 0, 0, 1]; // change last value to set background opacity
-myRender.high_res = 1;
-myRender.ortho = 2;
-myRender.texture("myTexture", "jit_matrix", "textureMatrix");
-
-var mySketch = new JitterObject("jit.gl.sketch", "video-window");
-mySketch.blend_enable = 1; //because we are working with transparency
-mySketch.antialias = 1;
-// mySketch.position = [-0.5, 0, 0];
-
-var mySecondSketch = new JitterObject("jit.gl.sketch", "video-window");
-mySecondSketch.blend_enable = 1; //because we are working with transparency
-mySecondSketch.antialias = 1;
-mySecondSketch.tex_map = 0; //the onli one that allows the texture to scale with the object 
-
-var viewPortStatus = 0;
-var xPositions = [];
-var yPositions = [];
-var grid = [];
-
-// 1440 X 900 = 3.2 X 2
-// 1 X 2 = 0.5 X 1
-var withRatio = myWindow.size[0] / myWindow.size[1]; // width ratio based on screen size
-var heightRatio = 1; // height ratio based on screen size
-
-var winL = -withRatio; // window left cohordinate
-var winR = withRatio; // window right cohordinate
-var winB = -heightRatio; // window bottom cohordinate
-var winT = heightRatio; // window top cohordinate
-
-var windowWidth = Math.abs(winL) + winR;
-var windowHeight = Math.abs(winB) + winT;
-post("windowWidth: " + windowWidth + "\n");
-var verticalSubdivision;
-var increment;
-var horizontalRes;
-var verticalRes;
-
-function newGrid(i){
-	verticalSubdivision = i; // vertical subdivision is expressed in how many cells to display horizontaly, vertical count will be calculated accordingly
-	increment = windowWidth / verticalSubdivision;
-	horizontalRes = windowWidth / increment;
-	verticalRes = windowHeight / increment;
-	positions = [-increment, increment];
-	// post("increment: " + increment + "\n");
-	makeGrid(verticalSubdivision);
-}
-
 var Vector = {
 	x: 0.0,
 	y: 0.0,
@@ -83,10 +20,10 @@ var Vector = {
 };
 
 var Color = {
-	r: 0.0,
-	g: 0.0,
-	b: 0.0,
-	a: 1.0,
+	r: 0,
+	g: 0,
+	b: 0,
+	a: 1,
 
 	add:function(Vector){
 		this.r += Color.r;
@@ -96,7 +33,155 @@ var Color = {
 	}
 };
 
-function Line(startX, startY, endX, endY, width, opacity){
+var colorBlack = Object.create(Color);
+colorBlack.r = 0.2;
+colorBlack.g = 0.2;
+colorBlack.b = 0.2;
+var colorWhite = Object.create(Color);
+colorWhite.r = 0.9;
+colorWhite.g = 0.9;
+colorWhite.b = 0.9;
+
+var myMatrix = new JitterObject("jit.matrix", "mat"); //
+myMatrix.dim = [1280, 1024];
+
+// SETTING UP WINDOW, RENDER AND SKETCH OBJECTS
+var myWindow = new JitterObject("jit.window", "video-window"); //
+myWindow.floating = 0;
+// myWindow.size = [1920, 1080];
+myWindow.size = [960, 540];
+// myWindow.rect = [305, 305];
+myWindow.pos = [0, 50];
+myWindow.fsaa = 1;
+myWindow.floating = 0;
+myWindow.border = 1;
+myWindow.fullscreen = 0;
+myWindow.usedstrect = 1;
+myWindow.depthbuffer = 0; // to enable transparency
+myWindow.fsmenubar = 0;
+// myWindow.colormode = "uyvy";
+
+var myRender = new JitterObject("jit.gl.render", "video-window");
+myRender.erase_color = [0, 0, 0, 1]; // change last value to set background opacity
+myRender.high_res = 1;
+myRender.ortho = 2;
+
+var mySketch = new JitterObject("jit.gl.sketch", "video-window");
+mySketch.blend_enable = 1; //because we are working with transparency
+mySketch.antialias = 1;
+// mySketch.position = [-0.5, 0, 0];
+// mySketch.automatic = 0;
+
+var myGrid = new JitterObject("jit.gl.gridshape", "video-window");
+myGrid.depth_enable = 1; 
+myGrid.smooth_shading = 1; 
+myGrid.lighting_enable = 1;
+myGrid.shape = "plane";
+myGrid.gl_color = [0.3, 0.3, 0.3, 0.5]; 
+myGrid.gridmode = 0;
+myGrid.poly_mode = 1;
+myGrid.line_width = 2;
+
+var viewPortStatus = 0;
+var xPositions = [];
+var yPositions = [];
+
+var viewPortAspectRatio = [1, 2];
+
+var screenResolution = [2880, 1800]; // setting widow size as a default value
+
+var withRatio; // width ratio based on screen size
+var heightRatio; // height ratio based on screen size
+var viewPortLeft; // window left cohordinate
+var viewPortRight; // window right cohordinate
+var viewPortBottom; // window bottom cohordinate
+var viewPortTop; // window top cohordinate
+var windowWidth;
+var windowHeight;
+
+var subdivisions;
+var increment;
+var horizontalRes;
+var verticalRes;
+
+function calculateSizesForViewPort(){
+	if(viewPortAspectRatio[0] <= viewPortAspectRatio[1]){
+		withRatio = viewPortAspectRatio[0] / viewPortAspectRatio[1]; // width ratio based on screen size
+		heightRatio = 1; // height ratio based on screen size		
+	} else if(viewPortAspectRatio[0] > viewPortAspectRatio[1]){
+		withRatio = 1; // width ratio based on screen size
+		heightRatio = viewPortAspectRatio[1] / viewPortAspectRatio[0]; // height ratio based on screen size
+	}
+	viewPortLeft = -withRatio; // window left cohordinate
+	viewPortRight = withRatio; // window right cohordinate
+	viewPortBottom = -heightRatio; // window bottom cohordinate
+	viewPortTop = heightRatio; // window top cohordinate
+	windowWidth = Math.abs(viewPortLeft) + viewPortRight;
+	windowHeight = Math.abs(viewPortBottom) + viewPortTop;
+}
+
+function scaleSketch(){
+	if(heightRatio < 1){
+		var factor = screenResolution[0] / screenResolution[1];
+		mySketch.scale = [factor, factor, 1];
+		myGrid.scale = [withRatio * factor, heightRatio * factor, 1];
+	} else {
+		mySketch.scale = [1, 1, 1];
+		myGrid.scale = [withRatio, heightRatio, 1];
+	}
+}
+
+function newGrid(i){
+	subdivisions = i; // vertical subdivision is expressed in how many cells to display horizontaly, vertical count will be calculated accordingly
+	
+	if(viewPortAspectRatio[0] >= viewPortAspectRatio[1]){
+		increment = windowHeight / subdivisions;		
+	} else if(viewPortAspectRatio[0] < viewPortAspectRatio[1]){
+		increment = windowWidth / subdivisions;
+	}
+
+	horizontalRes = windowWidth / increment;
+	verticalRes = windowHeight / increment;
+	positions = [-increment, increment];
+	myGrid.dim = [1 + horizontalRes, 1 + verticalRes];
+}
+
+function assignScreenResolution(width, height){
+	// sets the size of the sceen to project on
+	screenResolution[0] = width;
+	screenResolution[1] = height;
+	calculateSizesForViewPort();
+	scaleSketch();
+}
+
+function assignViewPortAspectRatio(width, height){
+	// sets the size of the sceen to project on
+	viewPortAspectRatio[0] = width;
+	viewPortAspectRatio[1] = height;
+	calculateSizesForViewPort();
+	updateBrogressBarPosition();
+	newGrid(8)
+	scaleSketch();
+}
+
+function updateBrogressBarPosition(){
+	progressBar.startPoint.x = viewPortLeft;
+	progressBar.endPoint.x = viewPortRight;
+	progressBar.startPoint.y = viewPortBottom;
+	progressBar.endPoint.y = viewPortBottom;
+}
+
+function manualScale(factor){ 
+	mySketch.scale = [factor, factor, 1];
+	myGrid.scale = [withRatio * factor, heightRatio * factor, 1];
+}
+
+calculateSizesForViewPort();
+scaleSketch();
+viewPort();
+newGrid(8);
+
+function Line(startX, startY, endX, endY){
 	this.startPoint = Object.create(Vector);
 	this.startPoint.x = startX;
 	this.startPoint.y = startY;
@@ -107,20 +192,18 @@ function Line(startX, startY, endX, endY, width, opacity){
 	this.endPoint.y = endY;
 	this.endPoint.z = 0;
 
-	this.color = Object.create(Color);
+	this.color = colorWhite;
 	this.color.r = 0.7;
 	this.color.g = 0.7;
 	this.color.b = 0.7;
-	this.color.a = opacity;
-
-	this.width = width;
 }
 
 Line.prototype.display = function(){
+	mySketch.glpushmatrix();
 	// mySketch.glcolor(0.39, 0.94, 1, 1);
 	mySketch.glcolor(this.color.r, this.color.g, this.color.b, this.color.a);
-	mySketch.gllinewidth(this.width);
-	mySketch.linesegment(this.startPoint.x, this.startPoint.y, 0, this.endPoint.x, this.endPoint.y, 0);
+	mySketch.quad(this.startPoint.x, this.startPoint.y, 0, this.startPoint.x, this.startPoint.y + 0.004, 0, this.endPoint.x, this.endPoint.y + 0.004, 0, this.endPoint.x, this.startPoint.y, 0);
+	mySketch.glpopmatrix();
 }
 
 Line.prototype.run = function(){
@@ -132,178 +215,56 @@ Line.prototype.run = function(){
 
 function fullScreen(toggle){
 	myWindow.fullscreen = toggle;
-}	
+}
 
 function toggleViewPort(toggle){
 	viewPortStatus = toggle;	
 }
 
 function viewPort(){
+	mySketch.glpushmatrix();
+	
 	if(viewPortStatus == 1){
-		// Drawing some guides to define viewport and help positioning the projector
-		mySketch.moveto(0, 0, 0);
-		mySketch.glcolor(0.5, 0.5, 0.5, 1);
-		mySketch.gllinewidth(4);
-		mySketch.linesegment(-0.5, 1, 0, 0.5, 1, 0);
-		mySketch.linesegment(-0.5, -1, 0, 0.5, -1, 0);
-		mySketch.linesegment(-0.5, 1, 0, -0.5, -1, 0);
-		mySketch.linesegment(0.5, 1, 0, 0.5, -1, 0);
-		// Drawing two black planes on the sides of the frame to hide bleeding
-		mySketch.glcolor(0, 0, 0, 0.8);
-		mySketch.moveto(-1.5, 1);
-		mySketch.plane(1, 2);
-		mySketch.moveto(1.5, 1);
-		mySketch.plane(1, 2);
-		myRender.axes = 1;		
+		mySketch.glcolor(0, 1, 0, 0.1);
+		myRender.axes = 1;	
+
 	} else {
 		mySketch.glcolor(0, 0, 0, 1);
-		mySketch.moveto(-1.5, 1);
-		mySketch.plane(1, 2);
-		mySketch.moveto(1.5, 1);
-		mySketch.plane(1, 2);
-		myRender.axes = 0;
-	}
-}
-
-function gridResolution(subdivision){
-	xPositions = [];
-	yPositions = [];
-
-	// if (withRatio > heightRatio){
-	var wIncrement = windowWidth / subdivision;		
-	// } else if (withRatio <= heightRatio){
-	// 	var wIncrement = windowWidth / wRes;
-	// }
-
-	var verticalRes = Math.floor(windowHeight / wIncrement);
-	var verticalCorrector = (windowHeight - (verticalRes * wIncrement)) / 2;
-	
-	// post("wIncrement: " + wIncrement + "\n");
-	// post("verticalRes: " + verticalRes + "\n");
-	// post("verticalCorrector: " + verticalCorrector + "\n");
-	// post("\n");
-	// post("\n");
-
-	for(var i = 0; i <= subdivision; i++){
-		var xVal = (wIncrement * i) - (windowWidth / 2);
-		xPositions.push(xVal);
+		myRender.axes = 0;		
 	}
 
-	for(var i = 0; i <= verticalRes; i++){
-		var yVal = verticalCorrector + (wIncrement * i) - (windowHeight / 2);
-		yPositions.push(yVal);
+	if(heightRatio < 1){
+		var x1 = viewPortRight;
+		var y1 = viewPortTop;
+		var x2 = viewPortRight;
+		var y2 = viewPortTop + windowHeight * 10;
+		var x3 = viewPortLeft;
+		var y3 = viewPortTop + windowHeight * 10;
+		var x4 = viewPortLeft;
+		var y4 = viewPortTop;
+		mySketch.quad(x1, y1, 0, x2, y2, 0, x3, y3, 0, x4, y4, 0);
+		mySketch.quad(x1, -y1, 0, x2, -y2, 0, x3, -y3, 0, x4, -y4, 0);
+	} else if(heightRatio >= 1){
+		var x1 = viewPortRight + windowWidth * 10;
+		var y1 = viewPortTop;
+		var x2 = viewPortRight + windowWidth * 10;
+		var y2 = viewPortBottom;
+		var x3 = viewPortRight;
+		var y3 = viewPortBottom;
+		var x4 = viewPortRight;
+		var y4 = viewPortTop;
+		mySketch.quad(x1, y1, 0, x2, y2, 0, x3, y3, 0, x4, y4, 0);
+		mySketch.quad(-x1, y1, 0, -x2, y2, 0, -x3, y3, 0, -x4, y4, 0);
 	}
-
-	// post("xPositions: " + xPositions + "\n");
-	// post("yPositions: " + yPositions + "\n");
-}
-
-function makeGrid(verticalSubdivision){
-
-	grid = [];
-	
-	if(verticalSubdivision > 0){
-		gridResolution(verticalSubdivision);
-
-		for(var i = 0; i < xPositions.length; i++){
-			var sX = xPositions[i];
-			var sY = yPositions[0];
-			var eX = xPositions[i];
-			var eY = yPositions[yPositions.length - 1];
-			
-			grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
-		}
-
-		for(var i = 0; i < yPositions.length; i++){
-			var sX = xPositions[0];
-			var sY = yPositions[i];
-			var eX = xPositions[xPositions.length - 1];
-			var eY = yPositions[i];
-
-			grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
-		}
-
-		for(var i = 0; i < xPositions.length - 1; i++){
-			var sX = xPositions[0];
-			var sY = yPositions[i];
-			var eX = xPositions[xPositions.length - 1 - i];
-			var eY = yPositions[yPositions.length - 1];
-			
-			// grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
-		}
-
-		for(var i = 1; i < xPositions.length - 1; i++){
-			var sX = xPositions[i];
-			var sY = yPositions[0];
-			var eX = xPositions[xPositions.length - 1];
-			var eY = yPositions[yPositions.length - 1 - i];
-			
-			// grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
-		}
-
-		for(var i = 1; i < xPositions.length - 1; i++){
-			var sX = xPositions[i];
-			var sY = yPositions[0];
-			var eX = xPositions[0];
-			var eY = yPositions[i];
-			
-			// grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
-		}
-
-		for(var i = 0; i < xPositions.length - 1; i++){
-			var sX = xPositions[i];
-			var sY = yPositions[yPositions.length - 1];
-			var eX = xPositions[xPositions.length - 1];
-			var eY = yPositions[i];
-			
-			// grid.push(new Line(sX, sY, eX, eY, 3, 0.1));
-		}
-	}
-
-	// post("grid: " + grid.length + "\n");
-}
-
-function windowSize(w ,h){
-	myWindow.size = [w ,h];
-
-	if(w < h){
-		withRatio = myWindow.size[0] / myWindow.size[1]; // width ratio based on screen size
-		heightRatio = 1; // height ratio based on screen size		
-	} else if(w > h){
-		withRatio = 1; // width ratio based on screen size
-		heightRatio = 1 / (myWindow.size[0] / myWindow.size[1]); // height ratio based on screen size
-	} else if(w == h){
-		withRatio = 1;
-		heightRatio = 1;
-	}
-
-	winL = -withRatio; // window left cohordinate
-	winR = withRatio; // window right cohordinate
-	winB = -heightRatio; // window bottom cohordinate
-	winT = heightRatio; // window top cohordinate
-	windowWidth = Math.abs(winL) + winR;
-	windowHeight = Math.abs(winB) + winT;
-
+	mySketch.glpopmatrix();
+	mySketch.glflush();
 }
 
 function gridIntensity(value){
-	if(grid.length > 0){
-		for(var i = 0; i < grid.length; i++){
-			// adding 0.1 so it never goes to 0
-			grid[i].color.a = (high * value) + 0.1;
-		}
-	}
-}
-
-// given that small velocity values are very hard to trigger with preciosion, this method allows me to rudimentally tune the sensitivity of pads
-function mappedVelocity(velocity){	
-	// the smaller the number the higher will be the minimum value
-	var sensitivity = 90;
-	var mappedVelocity = 0;
-	if(velocity >= sensitivity){
-		mappedVelocity = 1.0;
-	} else {
-		mappedVelocity = velocity / sensitivity;
-	}
-	return mappedVelocity;
+	// if(grid.length > 0){
+	// 	for(var i = 0; i < grid.length; i++){
+	// 		// adding 0.1 so it never goes to 0
+	// 		// grid[i].color.a = (high * value) + 0.1;
+	// 	}
+	// }
 }

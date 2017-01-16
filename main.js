@@ -26,14 +26,7 @@ var low = 0;
 var mid = 0;
 var high = 0;
 
-// create two x to display at the top and bottom of the projection 
-var topStatus = new Character(0, 0.9375, 0, 0, 0, 0, 0.01, "rnd");
-var bottomStatus = new Character(0, -0.9375, 0, 0, 0, 0, 0.01, "rnd");
-var progressBar = new Line(winL, winB, winR, winB, 20, 1);
-topStatus.fading = false;
-bottomStatus.fading = false;
-topStatus.lifespan = 255;
-bottomStatus.lifespan = 255;
+var progressBar = new Line(viewPortLeft, viewPortBottom, viewPortRight, viewPortBottom);
 
 
 //==================
@@ -92,7 +85,35 @@ function dialsValues(d0, d1, d2, d3, d4, d5, d6, d7){
 }
 
 function background(value){
-	myRender.erase_color = [value/2, value/2, value/2, 1-(value * 2)];
+	// colorBackground.r = 0.9;
+	// colorBackground.g = 0.9;
+	myRender.erase_color = [0, 0, 0, value];
+}
+
+function invertColors(invert){
+	if (invert == 1) {
+		// black into white
+		colorBlack.r = 0.9;
+		colorBlack.g = 0.9;
+		colorBlack.b = 0.9;
+		// white into black
+		colorWhite.r = 0;
+		colorWhite.g = 0;
+		colorWhite.b = 0;
+		// background
+		myRender.erase_color = [1, 1, 1, 1];
+	} else if (invert == 0){
+		// back to black
+		colorBlack.r = 0;
+		colorBlack.g = 0;
+		colorBlack.b = 0;
+		// back to white
+		colorWhite.r = 0.9;
+		colorWhite.g = 0.9;
+		colorWhite.b = 0.9;
+		// background
+		myRender.erase_color = [0, 0, 0, 1];
+	}
 }
 
 function updateProgressBar(timeLeft, totalTime){
@@ -148,7 +169,7 @@ function draw(){
 		for(var i = 0; i < layer1.length; i++){
 			layer1[i].run();
 		}
-	}
+	}	
 
 	if(layer2.length > 0 && sustainForLayer2 == true){
 		for(var i =	 0; i < layer2.length; i++){
@@ -167,31 +188,19 @@ function draw(){
 			layer4[i].run();
 		}
 	}
-	// you could consider having an effect where stacked thin black panles appear on top of everithing as if creating cuts in the images.
-	if(grid.length > 0){
-		for(var i = 0; i < grid.length; i++){
-			grid[i].run();
-		}
-	}
 
-	outlet(0, "jit_matrix", myRender);
-	outlet(1, increment); 
+	outlet(0, "jit_matrix", myRender.name); 
+	outlet(1, "jit_matrix", myMatrix.name);
 
-	topStatus.run();
-	bottomStatus.run();
 	progressBar.run();
 
 	gridIntensity(dial1);
 	viewPort();
 
-
 	myRender.erase();
 	myRender.drawswap();
-
 
 	// reset the sketch at every frame to avoid to overload the command list 
 	// that's because the sketch object will keep accumulating all the commands at each cycle	
 	mySketch.reset();
-	mySecondSketch.reset();
-
 }

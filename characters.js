@@ -89,7 +89,7 @@ function getArrayForLayer(layer){
 //		Character Object
 //===========================
 
-function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, size, type){	
+function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, type){	
 	this.flashing = false;
 	this.fading = true; // objects are all fading by default causing lifespan to decrease and disappear from the window
 	this.bouncing = false;
@@ -136,12 +136,10 @@ function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, siz
 	this.targetScale.y = 1;
 
 	this.rotation = 0;
+	this.rotationDirection = Math.random() > 0.5 ? 1 : -1;
 	this.targetRotation = 0;
 
-	this.color = Object.create(Color);
-	this.color.r = 0.9;
-	this.color.g = 0.9;
-	this.color.b = 0.9;
+	this.color = colorWhite;
 }
 
 Character.prototype.display = function(){
@@ -165,7 +163,8 @@ Character.prototype.display = function(){
 		// this.location.y
 		// this.rotation
 
-		case "sqr": 
+		// Plane based
+		case "sqr___": 
 			//plane centered scaling both directions
 		    mySketch.glpushmatrix();
 		    mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
@@ -176,7 +175,7 @@ Character.prototype.display = function(){
         	mySketch.glpopmatrix();
         break;
 
-        case "kld":
+        case "kld___":
         	// this is and insane kaleidoscopic one.
         	// when many elements are displayed, they ovelrap in nice composition every 360 degrees.
         	mySketch.glpushmatrix();
@@ -188,7 +187,7 @@ Character.prototype.display = function(){
         	mySketch.glpopmatrix();
         break;
 
-	    case "pln":
+	    case "pln___":
 	    	// creates bars where the bottom side is fixed and the top one scales
 		    mySketch.glpushmatrix();
 		    mySketch.gltranslate(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
@@ -197,7 +196,7 @@ Character.prototype.display = function(){
         	mySketch.glpopmatrix();
         break;
 
-        case "dtt":
+        case "dtt___":
         	mySketch.glpushmatrix();
         	mySketch.glenable("line_stipple"), 
         	mySketch.gllinestipple(1, 32639); // 0011111100111111 - 0111111101111111
@@ -214,7 +213,7 @@ Character.prototype.display = function(){
 			mySketch.glpopmatrix();
         break;
 
-        case "rtt": // old rect
+        case "rtt___": // old rect
 	        mySketch.glpushmatrix();
 		    mySketch.gltranslate(this.location.x, this.location.y, 0);
 	    	mySketch.glrotate(this.rotation/2, 0, 0, 1);
@@ -224,7 +223,7 @@ Character.prototype.display = function(){
         	mySketch.glpopmatrix();
         break;
 
-        case "sq_":
+        case "sq____":
         	// to fix
         	mySketch.glpushmatrix();
 			mySketch.glscale(this.scale.x, this.scale.y, 1);
@@ -235,7 +234,7 @@ Character.prototype.display = function(){
        		mySketch.glpopmatrix();
         break;
 
-        case "seg":
+        case "seg___":
         	mySketch.glpushmatrix();
 			mySketch.glscale(this.scale.x, 1, 1);
 			mySketch.glrotate(this.rotation, 0, 0, -1);
@@ -243,7 +242,7 @@ Character.prototype.display = function(){
         	mySketch.glpopmatrix();
         break;
 
-        case "dsg":
+        case "d-seg_":
         	// dsg aka double segment: similar to segment but it creates nice 45degrees compositions when rotating
 			mySketch.glpushmatrix();
 			mySketch.glrotate(this.rotation/2, 0, 0, 1);
@@ -254,45 +253,41 @@ Character.prototype.display = function(){
         	mySketch.glpopmatrix();
         break;
 
-	  //   case "rnd":
-	  //   	mySketch.gltranslate(this.location.x - increment, this.location.y, 0);
-			// mySketch.shapeslice(50);
-			// mySketch.glrotate(this.rotation, 0, 0, 1);
-			// mySketch.moveto(increment, 0, 0);
-			// mySketch.circle(this.size / 2);
-	  //       break;
-
-	  //   case "rnd:-":
-	  //   	mySketch.gltranslate(this.locationGenesis.x, this.location.y - increment, 0);
-			// mySketch.shapeslice(50);
-			// mySketch.glrotate(this.rotation, 0, 0, 1);
-			// mySketch.moveto(0, increment, 0);
-			// mySketch.circle(this.size / 2);
-	  //       break;
-
-	  //   case "rnd:|":
-	  //   	mySketch.gltranslate(this.location.x - increment, this.locationGenesis.y, 0);
-			// mySketch.shapeslice(50);
-			// mySketch.glrotate(this.rotation, 0, 0, 1);
-			// mySketch.moveto(increment, 0, 0);
-			// mySketch.circle(this.size / 2);
-	  //       break;
-
-		
-
-	    case "pin":
+        // Line based
+        case "pin___":
 	    	mySketch.glpushmatrix();
-			mySketch.linesegment(this.locationGenesis.x, this.boundTop, 0, this.location.x, this.location.y, 0);
-			// mySketch.linesegment(this.locationGenesis.x, this.boundTop, 0, -1 * this.location.x, -1 * this.location.y, 0);
-   		    // mySketch.gltranslate(this.location.x, this.location.y, 0);
-   		    // mySketch.moveto(this.location.x, this.location.y, 0); 	
-			mySketch.glscale(this.scale.x, this.scale.y, 1);
-			mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0);
-			mySketch.shapeslice(4); 
-	        mySketch.circle(0.1);
+			mySketch.linesegment(this.locationGenesis.x, this.boundTop, 0, this.locationGenesis.x * this.scale.x, this.location.y, 0);	
+			mySketch.glpopmatrix();
+
+			mySketch.glpushmatrix();
+			mySketch.shapeslice(30); 
+	        mySketch.circle(0.0125 * this.scale.x);
 	        mySketch.glpopmatrix();
         break;
 
+        case "mnt___":
+	    	mySketch.glpushmatrix();
+			mySketch.linesegment(this.boundLeft, this.locationGenesis.y, 0, this.locationGenesis.x * this.scale.x, this.location.y, 0);
+			mySketch.linesegment(this.locationGenesis.x * this.scale.x, this.location.y, 0, this.boundRight, this.locationGenesis.y, 0);	
+			mySketch.glpopmatrix();
+        break;
+
+        // Circle based
+        case "rnd___":
+			mySketch.glpushmatrix();			
+			mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.moveto(this.locationGenesis.x, this.location.y + increment, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.circle(increment * this.scale.x);
+			mySketch.moveto(this.location.x, this.locationGenesis.y - increment, 0);
+			mySketch.circle(increment * this.scale.x);
+	        mySketch.glpopmatrix();
+        break;
+
+        //////////////////
+        // TO CLEAN UP
+        /////////////////
 	    case "x--":
 	    	mySketch.glpushmatrix();
 	    	mySketch.gltranslate(this.location.x, this.location.y, 0);
@@ -332,10 +327,6 @@ Character.prototype.display = function(){
 		case "h_l":
 			mySketch.glpushmatrix();
 			var w =  Math.abs(this.boundRight - this.boundLeft) / 2;
-		    
-		 //    mySketch.gltranslate(0, this.location.y, 0);
-			// mySketch.linesegment(this.boundLeft, 0, 0, this.boundRight, 0, 0);	
-			// mySketch.glrotate(this.rotation, 0, 0, 1);
 		    mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
 			mySketch.glrotate(this.rotation/2, 0, 0, 1);
 			// mySketch.moveto(w, 0, 0);
@@ -348,7 +339,7 @@ Character.prototype.display = function(){
 	    	// i had something here but then removed it because it was constantly displayed... not sure why. I should check the max patch.
 	}
 
-	mySketch.glflush(); // you starte testing glflus on jan 14, 2017 to see if it would increase performance.
+	mySketch.glflush(); // you started testing glflus on jan 14, 2017 to see if it would increase performance.
 }
 
 Character.prototype.update = function(){	
@@ -438,25 +429,28 @@ Character.prototype.bounce = function(){
 //		Methods to add characters
 //====================================
 
-function addCharactersToLayer(layer, x, y, leftBound, rightBound, bottomBound, topBound, size, t){
+function addCharactersToLayer(layer, x, y, leftBound, rightBound, bottomBound, topBound, t){
 	// given that having a size of zero would make the shape invisible and therefore resul useless, I'm using 0 to enable randomization of size
-	layer.push(new Character(x, y, leftBound, rightBound, bottomBound, topBound, size, t));
+	layer.push(new Character(x, y, leftBound, rightBound, bottomBound, topBound, t));
 }
 
 function checkColumns(columns, rows){
 	// a method to check that the numbers of columns and rows in the grid is never greater than the one allowed: verticalSubdivision / 2 
 	var newColumns = columns;
 	var newRows = rows;
-	if(columns > (verticalSubdivision / 2)){
-		newColumns = verticalSubdivision / 2;
+
+	if(columns > (horizontalRes / 2)){
+		newColumns = horizontalRes / 2;
 	}
-	if(rows > ((windowHeight / increment) / 2)){
-		newRows = (windowHeight / increment) / 2;
+
+	if(rows > (verticalRes / 2)){
+		newRows = verticalRes / 2;
 	}
+	
 	return [newColumns, newRows];
 }
 
-function genesis(layer, items, type, size, gridColumns, gridRows){
+function genesis(layer, items, type, gridColumns, gridRows){
 	var array = prepareArrayForLayer(layer);
 	
 	var columnsAndRows = checkColumns(gridColumns, gridRows);
@@ -487,14 +481,14 @@ function genesis(layer, items, type, size, gridColumns, gridRows){
 	for (var f = 0; f < rows; f++) {
 		// calculate vertical multiplier
 		var verticalMultiplier = multiples[f];		
-		var y = winB + (rowPace * verticalMultiplier);
+		var y = viewPortBottom + (rowPace * verticalMultiplier);
 		var bottom = y - rowPace;
 		var top = y + rowPace;
 
 		for (var g = 0; g < columns; g++) {
 			// calculate horizontal multiplier
 			var horizontalMultiplier = multiples[g];
-			var x = winL + (colPace * horizontalMultiplier);
+			var x = viewPortLeft + (colPace * horizontalMultiplier);
 			var left = x - colPace;
 			var right = x + colPace;	
 			// populate the arrays with all the coordinates calculated
@@ -518,7 +512,7 @@ function genesis(layer, items, type, size, gridColumns, gridRows){
 
 	// populate array with elements
 	for (var i = cellsIndex; i < (items + cellsIndex); i++) {
-		addCharactersToLayer(array, xCoordinates[i], yCoordinates[i], leftBounds[i], rightBounds[i], bottomBounds[i], topBounds[i], size, type);					
+		addCharactersToLayer(array, xCoordinates[i], yCoordinates[i], leftBounds[i], rightBounds[i], bottomBounds[i], topBounds[i], type);					
 	}
 }
 
@@ -628,19 +622,10 @@ function newRotationTarget(layer, velocity, easeStatus){
 				array[i].rotating = easeStatus;
 				// assign ease value
 				array[i].ease = velocity / 128;
-				// pick a position where to send the object
-				// var angle = Math.random() > 0.5 ? 45 : 90;
-				
-				if(array[i].type == "rnd:+" || array[i].type == "rnd:-" || array[i].type == "rnd:|"){
-					var randomDirection = Math.random() > 0.5 ? 1 : -1;
-				} else {
-					var randomDirection = 1;
-				}
-
 				// check bounds. this also assigns the values to the right object properites
 				array[i].rotation = array[i].targetRotation;
 				// array[i].targetRotation += angle * randomDirection;
-				array[i].targetRotation += 90 * randomDirection;
+				array[i].targetRotation += 90;
 
 
 			}
