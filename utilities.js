@@ -5,7 +5,7 @@
 // Twitter: @lucaderosso
 // Facebook: facebook.com/derossoluca
 // Pinterest: pinterest.com/lucaderosso
-
+// Github:
 
 var Vector = {
 	x: 0.0,
@@ -33,6 +33,42 @@ var Color = {
 	}
 };
 
+function Layer() {
+	this.elements = [];
+	this.sustain = false;
+	this.drawing = false;
+}
+
+Layer.prototype.toDraw = function(){
+	if(this.elements.length > 0){
+		this.checkIfElementsAreFading();
+		if(this.sustain == true || this.drawing == true){
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
+
+Layer.prototype.checkIfElementsAreFading = function(){
+	// this is not the cleanes way to deal with this problem but it works for now
+	for(var i = 0; i < this.elements.length; i++){
+		if(this.elements[i].lifespan > 0){
+			this.drawing = true;
+		} else {
+			this.drawing = false;
+		}
+	}
+	// post("this.drawing: " + this.drawing + "\n");
+}
+
+var layer1 = new Layer();
+var layer2 = new Layer();
+var layer3 = new Layer();
+var layer4 = new Layer();
+
+var layers = [layer1, layer2, layer3, layer4];
+
 var colorBlack = Object.create(Color);
 colorBlack.r = 0.2;
 colorBlack.g = 0.2;
@@ -48,10 +84,8 @@ myMatrix.dim = [1280, 1024];
 // SETTING UP WINDOW, RENDER AND SKETCH OBJECTS
 var myWindow = new JitterObject("jit.window", "video-window"); //
 myWindow.floating = 0;
-// myWindow.size = [1920, 1080];
-myWindow.size = [960, 540];
-// myWindow.rect = [305, 305];
-myWindow.pos = [0, 50];
+myWindow.size = [300, 600];
+myWindow.pos = [1600, 550];
 myWindow.fsaa = 1;
 myWindow.floating = 0;
 myWindow.border = 1;
@@ -73,11 +107,9 @@ mySketch.antialias = 1;
 // mySketch.automatic = 0;
 
 var myGrid = new JitterObject("jit.gl.gridshape", "video-window");
-myGrid.depth_enable = 1; 
-myGrid.smooth_shading = 1; 
-myGrid.lighting_enable = 1;
+myGrid.blend_enable = 1; //because we are working with transparency
 myGrid.shape = "plane";
-myGrid.gl_color = [0.3, 0.3, 0.3, 0.5]; 
+myGrid.gl_color = [0.8, 0.8, 0.8, 0.1]; 
 myGrid.gridmode = 0;
 myGrid.poly_mode = 1;
 myGrid.line_width = 2;
@@ -176,11 +208,6 @@ function manualScale(factor){
 	myGrid.scale = [withRatio * factor, heightRatio * factor, 1];
 }
 
-calculateSizesForViewPort();
-scaleSketch();
-viewPort();
-newGrid(8);
-
 function Line(startX, startY, endX, endY){
 	this.startPoint = Object.create(Vector);
 	this.startPoint.x = startX;
@@ -258,13 +285,4 @@ function viewPort(){
 	}
 	mySketch.glpopmatrix();
 	mySketch.glflush();
-}
-
-function gridIntensity(value){
-	// if(grid.length > 0){
-	// 	for(var i = 0; i < grid.length; i++){
-	// 		// adding 0.1 so it never goes to 0
-	// 		// grid[i].color.a = (high * value) + 0.1;
-	// 	}
-	// }
 }

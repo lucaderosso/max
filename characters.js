@@ -5,26 +5,18 @@
 // Twitter: @lucaderosso
 // Facebook: facebook.com/derossoluca
 // Pinterest: pinterest.com/lucaderosso
+// Github:
 
 // NOTES:
 // Velocity is used in two ways:
-// 1 - to enable events throug conditionals. If Velocity is greater than 0 it means there is an event so the m code can be executed
+// 1 - to enable events throug conditionals. If Velocity is greater than 0 the method is executed
 // 2 - to create variation on the method that is being called. i.e.: different values can make things move faster or slower
-
-
 
 //==================
 //		General
 //==================
 
-// these arrays are populated with all the Characters type that will be on stage at a given scene
-var layer1 = [];
-var layer2 = [];
-var layer3 = [];
-var layer4 = [];
-
 var positions = [-increment, increment];
-var size_multipliers = [0.0625, 0.125, 0.25, 0.5, 1]; // aka 1/16 1/8 1/4 1/2 1 of increment calculated in utilities.js
 
 var decay = 255; // setting 255 (aka sudden decay) because it's my preffered starting setting
 
@@ -32,34 +24,29 @@ var decay = 255; // setting 255 (aka sudden decay) because it's my preffered sta
 //		Methods to manage allLayers
 //====================================
 
-function clearAll(){
-	layer1 = [];
-	layer2 = [];
-	layer3 = [];
-	layer4 = [];
-}
-
 function prepareArrayForLayer(layer){	
 	var array = [];
+	
 	switch(layer){
 		case "layer1":
-			layer1 = [];
-			array = layer1;
+			layer1.elements.length = 0;
+			array = layer1.elements;
 		break;
 		case "layer2":
-			layer2 = [];
-			array = layer2;
+			layer2.elements.length = 0;
+			array = layer2.elements;
 		break;
 		case "layer3":
-			layer3 = [];
-			array = layer3;
+			layer3.elements.length = 0;
+			array = layer3.elements;
 		break;
 		case "layer4":
-			layer4 = [];
-			array = layer4;
+			layer4.elements.length = 0;
+			array = layer4.elements;
 		break;
 	    default:
 	}
+
 	return array
 }
 
@@ -67,16 +54,16 @@ function getArrayForLayer(layer){
 	var array = [];
 	switch(layer){
 		case "layer1":
-			array = layer1;
+			array = layer1.elements;
 		break;
 		case "layer2":
-			array = layer2;
+			array = layer2.elements;
 		break;
 		case "layer3":
-			array = layer3;
+			array = layer3.elements;
 		break;
 		case "layer4":
-			array = layer4;
+			array = layer4.elements;
 		break;
 	    default:
 	}
@@ -149,9 +136,8 @@ Character.prototype.display = function(){
 	// In general, the order of transformations is critical.
 	// Also:
 	// mySketch.moveto(0, 0, 0); is used below to center the composition on x,y 0,0.
-	this.freq = lfoFreq();
+
 	var alpha = this.lifespan / 255.0;
-	// var alpha = 255.0;
 	mySketch.glcolor(this.color.r, this.color.g, this.color.b, alpha);
 	mySketch.gllinewidth(4);
 
@@ -169,7 +155,6 @@ Character.prototype.display = function(){
 		    mySketch.glpushmatrix();
 		    mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
 	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(0, 0, 0);
 			mySketch.glscale(this.scale.x, this.scale.y, 1);
 			mySketch.plane(this.width, this.height);
         	mySketch.glpopmatrix();
@@ -198,8 +183,8 @@ Character.prototype.display = function(){
 
         case "dtt___":
         	mySketch.glpushmatrix();
-        	mySketch.glenable("line_stipple"), 
         	mySketch.gllinestipple(1, 32639); // 0011111100111111 - 0111111101111111
+		    mySketch.glenable("line_stipple");
 		    mySketch.gltranslate(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
 	    	mySketch.glrotate(this.rotation, 0, 0, 1);
 			mySketch.glscale(this.scale.x, this.scale.y, 1.);
@@ -226,8 +211,8 @@ Character.prototype.display = function(){
         case "sq____":
         	// to fix
         	mySketch.glpushmatrix();
+			mySketch.glrotate(this.rotation, 0, 0, 1);
 			mySketch.glscale(this.scale.x, this.scale.y, 1);
-		    mySketch.glrotate(this.rotation, 0, 0, 1);
 		    mySketch.gltranslate(this.location.x, this.location.y, 0);
 			mySketch.moveto(0, 0, 0); 
 			mySketch.plane(this.width, this.height);
@@ -284,6 +269,36 @@ Character.prototype.display = function(){
 			mySketch.circle(increment * this.scale.x);
 	        mySketch.glpopmatrix();
         break;
+
+        case "ttt___":
+			mySketch.glpushmatrix();			
+			mySketch.gltranslate(this.location.x, this.location.y, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			// mySketch.shapeprim("line_strip"); 
+			// mySketch.shapeslice(1, 2); 
+			mySketch.moveto(0, 0, 0);
+			// mySketch.shapeorient(0, 0, this.rotation);
+			// mySketch.glcolor(0, 0, 1, 0.3);
+			mySketch.plane(this.width/2, this.height - increment);
+			// mySketch.glcolor(0, 0, 1, 0.3);
+			// mySketch.move(0, 0, 0);
+			// mySketch.framequad(this.boundRight, this.boundTop, 0, this.boundRight, this.boundBottom, 0, this.boundLeft, this.boundBottom, 0, this.boundLeft, this.boundTop, 0);
+			mySketch.glcolor(0, 1, 0, 0.3);
+			mySketch.moveto(0, (this.height)/2 + increment, 0);
+			mySketch.circle(this.width/2);
+			mySketch.glcolor(0, 0, 0, 1);
+			mySketch.circle(this.width/4);
+
+			mySketch.glcolor(0.9, 0.9, 0.9, 1);
+			// mySketch.glcolor(1, 0, 0, 0.3);
+			mySketch.moveto(0, -(this.height - increment), 0);
+			mySketch.circle(this.width/2);
+			mySketch.glcolor(0, 0, 0, 1);
+			mySketch.circle(this.width/4);
+	        mySketch.glpopmatrix();
+        break;
+
+
 
         //////////////////
         // TO CLEAN UP
@@ -522,6 +537,19 @@ function genesis(layer, items, type, gridColumns, gridRows){
 //		Methods to move characters
 //=====================================
 
+var newLifeSpan = 255;
+
+function assignLifeSpan(value){	
+	for(var i = 0; i < layers.length; i++){
+		if(layers[i].sustain == true){
+			for(var f = 0; f < layers[i].elements.length; f++){
+				newLifeSpan = 255 * value;
+				layers[i].elements[f].lifespan = newLifeSpan;
+			}
+		}
+	}
+}
+		
 // sustain: allows to maintain image on screen for as long as pad is pressed
 function checkSustain(layer, velocity){
 	updateSustainForLayer(layer, velocity);
@@ -532,7 +560,7 @@ function checkSustain(layer, velocity){
 		// go through each element in the array
 		for(var i = 0; i < array.length; i++){
 			if(velocity > 0){
-				array[i].lifespan = 255; // recover lifespan
+				array[i].lifespan = newLifeSpan; // recover lifespan
 				array[i].fading = false;
 			} else {
 				array[i].fading = true;
@@ -541,29 +569,9 @@ function checkSustain(layer, velocity){
 	}
 }
 
-function bounce(layer, velocity){
-	var array = getArrayForLayer(layer);
-	// do the following only if the array is populated to avoid errors
-	if(array.length > 0){
-		for(var i = 0; i < array.length; i++){
-			// enable sustain to maintain image on screen for as long as pad is pressed
-			checkSustain(layer, velocity);
-
-			if(velocity > 0){
-				// array[i].freq = lfoFreq();
-				array[i].easing = false
-				array[i].bouncing = true;
-			} else if (velocity == 0) {
-				array[i].bouncing = false;
-			}
-		}
-	}
-}
-
 function newLocationTarget(layer, velocity, easeStatus, arrangement){
 	// go get the right array for the layer I want to interact with
 	var array = getArrayForLayer(layer);	
-
 	updateSustainForLayer(array, velocity);
 	// do the following only if the array is populated to avoid errors
 	if(array.length > 0){
@@ -666,48 +674,32 @@ function newScaleTarget(layer, velocity, easeStatus, arrangement){
 	}
 }
 
-function flash(layer, velocity){
-	var array = getArrayForLayer(layer);
-	// do the following only if the array is populated to avoid errors
-	if(array.length > 0){
-		for(var i = 0; i < array.length; i++){
-			if(velocity > 0){
-				array[i].flashing = true;
-			} else {
-				array[i].flashing = false;
-				array[i].lifespan = 255; // restore lifespan which will then fade in Character.prototype.display()
-			}
-		}
-	}
-}
-
 function updateLifeDecay(value){		
-	if(layer1.length > 0){
-		for(var f = 0; f < layer1.length; f++){
-			layer1[f].lifeDecay = (1 - value) * 255;
+	if(layer1.elements.length > 0){
+		for(var i = 0; i < layer1.elements.length; i++){
+			layer1.elements[i].lifeDecay = (1.01 - value) * 255;
 		}
 	}
-	if(layer2.length > 0){
-		for(var f = 0; f < layer2.length; f++){
-			layer2[f].lifeDecay = (1 - value) * 255;
+	if(layer2.elements.length > 0){
+		for(var i = 0; i < layer2.elements.length; i++){
+			layer2.elements[i].lifeDecay = (1.01 - value) * 255;
 		}
 	}
-	if(layer3.length > 0){
-		for(var f = 0; f < layer3.length; f++){
-			layer3[f].lifeDecay = (1 - value) * 255;
+	if(layer3.elements.length > 0){
+		for(var i = 0; i < layer3.elements.length; i++){
+			layer3.elements[i].lifeDecay = (1.01 - value) * 255;
 		}
 	}
-	if(layer4.length > 0){
-		for(var f = 0; f < layer4.length; f++){
-			layer4[f].lifeDecay = (1 - value) * 255;
+	if(layer4.elements.length > 0){
+		for(var i = 0; i < layer4.elements.length; i++){
+			layer4.elements[i].lifeDecay = (1.01 - value) * 255;
 		}
-	}		
+	}
 }
 
 function callAction(family, type, layer, velocity){
 	// create action name concatenating family and type
 	var action = family.concat(type);
-
 	switch (action){
 		case "resetAll":
 			newLocationTarget(layer, velocity, true, "reset");

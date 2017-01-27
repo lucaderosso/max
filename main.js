@@ -5,10 +5,10 @@
 // Twitter: @lucaderosso
 // Facebook: facebook.com/derossoluca
 // Pinterest: pinterest.com/lucaderosso
+// Github:
 
 // Things you will forget
 // 1.0 — always first check the array of shape is not empty otherwise it will give an error. remember every time a new scen starts the array is emptied and quickly populated again with the shapes necessary for the current scene
-
 
 
 //===================
@@ -26,6 +26,15 @@ var low = 0;
 var mid = 0;
 var high = 0;
 
+var dial0 = 0;
+var dial1 = 0;
+var dial2 = 0;
+var dial3 = 0;
+var dial4 = 0;
+var dial5 = 0;
+var dial6 = 0;
+var dial7 = 0;
+
 var progressBar = new Line(viewPortLeft, viewPortBottom, viewPortRight, viewPortBottom);
 
 
@@ -33,6 +42,9 @@ var progressBar = new Line(viewPortLeft, viewPortBottom, viewPortRight, viewPort
 //		Setup
 //==================
 
+calculateSizesForViewPort();
+scaleSketch();
+viewPort();
 newGrid(8); // build a grid that draw() will display
 
 
@@ -48,14 +60,6 @@ function transport(l, m, h){
 	high = h;
 }
 
-function lfoFreq(value){
-	// var freqs = [2, 4, 8, 16, 32];
-	var freqs = [32, 16, 8, 4, 2, 1];
-	var freq = freqs[value];
-	// post("freq: " + freq + "\n");
-	return freq;
-}
-
 function levels(l, m, h){
 	// update values for low mid high levels coming from the DSP Values M4L device in the same track as this one.
 	low = l;
@@ -63,46 +67,44 @@ function levels(l, m, h){
 	high = h;
 }
 
-function dialsValues(d0, d1, d2, d3, d4, d5, d6, d7){
-	
-	dial0 = d0;
-	dial1 = d1;
-	dial2 = d2;
-	dial3 = d3;
-	dial4 = d4;
-	dial5 = d5;
-	dial6 = d6;
-	dial7 = d7;
-
-	// assign dials to the method they should run
-	lfoFreq(d1);
-	updateLifeDecay(d2);
-	// d3
-	// d4
-	// d5
-	// d6
-	background(d7);
+function dialValue(dial, value){	
+	switch (dial){
+		case "d0":
+			assignLifeSpan(value);
+			dial0 = value;
+		break;
+		case "d1":
+			dial1 = value;
+		break;
+		case "d2":
+			dial2 = value;
+		break;
+		case "d3":
+			dial3 = value;
+		break;
+		case "d4":
+			dial4 = value;
+		break;
+		case "d5":
+			dial5 = value;
+		break;
+		case "d6":
+			updateLifeDecay(value);			
+			dial6 = value;
+		break;
+		case "d7":
+			background(value);
+			dial7 = value;
+		break;
+		default:
+	}
 }
 
-function background(value){
-	// colorBackground.r = 0.9;
-	// colorBackground.g = 0.9;
-	myRender.erase_color = [0, 0, 0, value];
-}
+var whiteOnBlack = true;
 
 function invertColors(invert){
-	if (invert == 1) {
-		// black into white
-		colorBlack.r = 0.9;
-		colorBlack.g = 0.9;
-		colorBlack.b = 0.9;
-		// white into black
-		colorWhite.r = 0;
-		colorWhite.g = 0;
-		colorWhite.b = 0;
-		// background
-		myRender.erase_color = [1, 1, 1, 1];
-	} else if (invert == 0){
+	if (invert == 0) {
+		whiteOnBlack = true;
 		// back to black
 		colorBlack.r = 0;
 		colorBlack.g = 0;
@@ -111,36 +113,66 @@ function invertColors(invert){
 		colorWhite.r = 0.9;
 		colorWhite.g = 0.9;
 		colorWhite.b = 0.9;
-		// background
+		// black background
 		myRender.erase_color = [0, 0, 0, 1];
+		// white grid
+		myGrid.gl_color = [0.8, 0.8, 8, 0.1];
+	} else if (invert == 1){
+		whiteOnBlack = false;
+		// black into white
+		colorBlack.r = 0.9;
+		colorBlack.g = 0.9;
+		colorBlack.b = 0.9;
+		// white into black
+		colorWhite.r = 0;
+		colorWhite.g = 0;
+		colorWhite.b = 0;
+		// white background background
+		myRender.erase_color = [1, 1, 1, 1];
+		// black grid
+		myGrid.gl_color = [0, 0, 0, 0.1];
+	}
+}
+
+function gridIntensity(){
+	// adding 0.1 so it never goes to 0
+	if(whiteOnBlack == true){
+		myGrid.gl_color = [0.8, 0.8, 0.8, (high * dial1) + 0.1];
+	} else {
+		myGrid.gl_color = [0, 0, 0, (high * dial1) + 0.1];
+	}
+}
+
+function background(value){
+	if(whiteOnBlack == true){
+		myRender.erase_color = [0, 0, 0, 1 - value];
+	} else {
+		myRender.erase_color = [1, 1, 1, 1 - value];
 	}
 }
 
 function updateProgressBar(timeLeft, totalTime){
-	progressBar.endPoint.x = (windowWidth * (timeLeft / totalTime)) - winR;
+	progressBar.endPoint.x = (windowWidth * (timeLeft / totalTime)) - viewPortRight;
 }
 
-var sustainForLayer1 = false;
-var sustainForLayer2 = false;
-var sustainForLayer3 = false;
-var sustainForLayer4 = false;
-
 function updateSustainForLayer(layer, velocity){	
-	
+	// this method was made to update a boolean value I can then use to decide 
+	// wether or not drawing instruction for a specific layer should be sent to mySketch
+	// with the objective to same cpu when shapes' lifespan is 0
 	var sustainStatus = velocity > 0 ? true : false;
 	
 	switch (layer){
 		case "layer1":
-			sustainForLayer1 = sustainStatus;
+			layer1.sustain = sustainStatus;
 		break;
 		case "layer2":
-			sustainForLayer2 = sustainStatus;
+			layer2.sustain = sustainStatus;
 		break;
 		case "layer3":
-			sustainForLayer3 = sustainStatus;
+			layer3.sustain = sustainStatus;
 		break;
 		case "layer4":
-			sustainForLayer4 = sustainStatus;
+			layer4.sustain = sustainStatus;
 		break;
 		default:
 	}
@@ -151,41 +183,29 @@ function updateSustainForLayer(layer, velocity){
 //		Draw
 //==================
 
-var clock = 1;
-
 function draw(){
-	// mySketch.moveto(-1, 0, 0);
-	// mySketch.glrotate(45, 0, 0, 1);
 
-	if (clock <= 32){
-		clock += 1;		
-	} else {
-		clock = 1;
-	}
-    
-	// you should consider creating a rule by which only when decay is 255 these loop ar run
-	// this will avoid to have instructions being sent also for layers not displayed
-	if(layer1.length > 0 && sustainForLayer1 == true){
-		for(var i = 0; i < layer1.length; i++){
-			layer1[i].run();
-		}
-	}	
-
-	if(layer2.length > 0 && sustainForLayer2 == true){
-		for(var i =	 0; i < layer2.length; i++){
-			layer2[i].run();
+	if(layer1.toDraw()){
+		for(var i = 0; i < layer1.elements.length; i++){
+			layer1.elements[i].run();
 		}
 	}
 
-	if(layer3.length > 0 && sustainForLayer3 == true){
-		for(var i = 0; i < layer3.length; i++){
-			layer3[i].run();
+	if(layer2.toDraw()){
+		for(var i = 0; i < layer2.elements.length; i++){
+			layer2.elements[i].run();
 		}
 	}
 
-	if(layer4.length > 0 && sustainForLayer4 == true){
-		for(var i = 0; i < layer4.length; i++){
-			layer4[i].run();
+	if(layer3.toDraw()){
+		for(var i = 0; i < layer3.elements.length; i++){
+			layer3.elements[i].run();
+		}
+	}
+
+	if(layer4.toDraw()){
+		for(var i = 0; i < layer4.elements.length; i++){
+			layer4.elements[i].run();
 		}
 	}
 
@@ -193,8 +213,7 @@ function draw(){
 	outlet(1, "jit_matrix", myMatrix.name);
 
 	progressBar.run();
-
-	gridIntensity(dial1);
+	gridIntensity();
 	viewPort();
 
 	myRender.erase();
