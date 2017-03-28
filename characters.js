@@ -87,7 +87,7 @@ function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, typ
 	this.scaling = false;
 
 	this.type = type;
-	this.ease = 0.2;
+	this.ease = 1;
 	this.lifespan = 0;
 	this.lifeDecay = 255.0;
 
@@ -126,7 +126,7 @@ function Character(xPos, yPos, leftBound, rightBound, bottomBound, topBound, typ
 	this.rotationDirection = Math.random() > 0.5 ? 1 : -1;
 	this.targetRotation = 0;
 
-	this.color = colorWhite;
+	this.color = Object.create(colorWhite);
 }
 
 Character.prototype.display = function(){
@@ -149,212 +149,404 @@ Character.prototype.display = function(){
 		// this.location.y
 		// this.rotation
 
-		// Plane based
-		case "sqr___": 
+		// Notes on commands:
+		// - moveto(): if you don't want to use it to actually move objects, then add it to the shape and set it to 0,0,0 to restore the coordinate other shapes might have assigned 
+
+		//–––––––––––-
+		// Cube based
+		//––––––––––-–
+
+        case "CUB_00A": 
 			//plane centered scaling both directions
 		    mySketch.glpushmatrix();
+		    mySketch.shapeorient(0, 0, 0);
 		    mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
-	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.glscale(this.scale.x, this.scale.y, 1);
-			mySketch.plane(this.width, this.height);
+	    	mySketch.moveto(0, 0, 0);
+	    	mySketch.glrotate(this.rotation, 0, 1, 0);
+			mySketch.glscale(1, this.scale.y, 1);
+			mySketch.cube(this.width, this.height, 0.01);
         	mySketch.glpopmatrix();
         break;
 
-        case "kld___":
-        	// this is and insane kaleidoscopic one.
-        	// when many elements are displayed, they ovelrap in nice composition every 360 degrees.
-        	mySketch.glpushmatrix();
-        	mySketch.gltranslate(this.location.x, this.location.y, 0);
-	    	mySketch.moveto(this.boundLeft + this.width, this.boundBottom + this.height, 0);
-	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.glscale(this.scale.x, this.scale.y, 1);
-			mySketch.plane(this.width, this.height);
-        	mySketch.glpopmatrix();
-        break;
-
-	    case "pln___":
+        case "CUB_00B":
 	    	// creates bars where the bottom side is fixed and the top one scales
 		    mySketch.glpushmatrix();
-		    mySketch.gltranslate(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
+		    mySketch.shapeorient(0, 0, 0);
+		    mySketch.gltranslate(this.locationGenesis.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
+			mySketch.moveto(0, 0, 0);
+			mySketch.glrotate(this.rotation, 0, 1, 0);
+			//
+			mySketch.gldisable("line_stipple");
+			//
+			mySketch.cube(this.width, this.height * this.scale.y, 0.01); // putting scale.y here to avoid using glscale
+        	mySketch.glpopmatrix();
+        break;
+
+        case "CUB_10A": 
+			//plane centered scaling both directions
+		    mySketch.glpushmatrix();
+		    mySketch.shapeorient(0, 0, 0);
+		    mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
+	    	mySketch.moveto(0, 0, 0);
+	    	mySketch.glrotate(this.rotation + 45, 0, 1, 0);
+			mySketch.glscale(1, this.scale.y, 1);
+			//
+			mySketch.shapeslice(2, 1);
+			mySketch.shapeprim("lines");
+			mySketch.gllinewidth(2);
+			//
+			mySketch.cube(this.width, this.height, 0.01);
+        	mySketch.glpopmatrix();
+        break;
+
+		//––––––––––––-
+		// Plane based
+		//–––––––––––-–
+
+		// how to name
+
+		// first letters
+		// 	PLN = plane
+		// 	CUB = cube
+		// 	HLN = horizontal line
+		// 	VLN = vertical line
+
+		// first digit
+		// 	0 = solid
+		// 	1 = lines
+		// 	2 = dots
+		// 	3 = lines and dots
+		
+		// second digit
+		// 	0 = no line_stipple
+		// 	1 = line_stipple
+		//  2 = both styles
+		case "PLN____":
+			mySketch.glpushmatrix();
+			mySketch.shapeorient(0, 0, 0);
+			mySketch.gltranslate(this.location.x, this.locationGenesis.y, 0);
 			mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.moveto(0, 0, 0);
+			//
+			mySketch.shapeslice(6);
+			mySketch.framequad(this.locationGenesis.x + 0.015, this.locationGenesis.y + 0.015, 0, this.locationGenesis.x + 0.015, this.locationGenesis.y - 0.015, 0, this.locationGenesis.x - 0.015, this.locationGenesis.y, - 0.015, 0, this.locationGenesis.x - 0.015, this.locationGenesis.y + 0.015, 0);
+	        mySketch.glpopmatrix();
+        break;
+
+        case "PLN_00A":
+		    mySketch.glpushmatrix();
+		    mySketch.shapeorient(0, 0, 0);
+		    mySketch.gltranslate(this.locationGenesis.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
+			mySketch.moveto(0, 0, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			//
+			mySketch.gldisable("line_stipple");
+			//
 			mySketch.plane(this.width, this.height * this.scale.y); // putting scale.y here to avoid using glscale
         	mySketch.glpopmatrix();
         break;
 
-        case "dtt___":
-        	mySketch.glpushmatrix();
-        	mySketch.gllinestipple(1, 32639); // 0011111100111111 - 0111111101111111
-		    mySketch.glenable("line_stipple");
-		    mySketch.gltranslate(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
-	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.glscale(this.scale.x, this.scale.y, 1.);
-			mySketch.framequad(this.width, this.height, 0, this.width, -this.height, 0, -this.width, -this.height, 0, -this.width, this.height, 0);
-	    	// mySketch.moveto(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0);
-	    	mySketch.glpopmatrix();
-	    	mySketch.glpushmatrix();
-	    	// mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.gltranslate(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
-			mySketch.circle(0.01);
-			mySketch.glpopmatrix();
-        break;
-
-        case "rtt___": // old rect
-	        mySketch.glpushmatrix();
-		    mySketch.gltranslate(this.location.x, this.location.y, 0);
-	    	mySketch.glrotate(this.rotation/2, 0, 0, 1);
-			mySketch.glscale(this.scale.x * 4, 1, 1);
-			// making the width 1/8th of the height
-			mySketch.plane(this.width/4, this.height);
-        	mySketch.glpopmatrix();
-        break;
-
-        case "sq____":
-        	// to fix
-        	mySketch.glpushmatrix();
+        case "PLN_10A":
+		    mySketch.glpushmatrix();
+		    mySketch.shapeorient(0, 0, 0);
+		    mySketch.gltranslate(this.locationGenesis.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
+			mySketch.moveto(0, 0, 0);
 			mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.glscale(this.scale.x, this.scale.y, 1);
-		    mySketch.gltranslate(this.location.x, this.location.y, 0);
-			mySketch.moveto(0, 0, 0); 
-			mySketch.plane(this.width, this.height);
-       		mySketch.glpopmatrix();
-        break;
-
-        case "seg___":
-        	mySketch.glpushmatrix();
-			mySketch.glscale(this.scale.x, 1, 1);
-			mySketch.glrotate(this.rotation, 0, 0, -1);
-			mySketch.linesegment(this.location.x - this.width, this.location.y, 0, this.location.x + this.width, this.location.y, 0);
+			//
+			mySketch.gldisable("line_stipple");
+			mySketch.shapeprim("lines");
+			mySketch.shapeslice(8, 1);
+			mySketch.gllinewidth(20);
+			mySketch.glpointsize(10);
+			//
+			mySketch.plane(this.width, this.height * this.scale.y); // putting scale.y here to avoid using glscale
         	mySketch.glpopmatrix();
         break;
 
-        case "d-seg_":
+        case "PLN_12A":
+		    mySketch.glpushmatrix();
+		    mySketch.shapeorient(0, 0, 0);
+		    mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0); // position shape at location
+			mySketch.moveto(0, 0, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			//
+			mySketch.shapeprim("lines");
+			mySketch.shapeslice(4, 1);
+			mySketch.gldisable("line_stipple");
+			mySketch.gllinestipple(1, 255);
+			mySketch.gllinewidth(10);
+			mySketch.glpointsize(10);
+			mySketch.plane(this.width, this.height * this.scale.y); // putting scale.y here to avoid using glscale
+        	//
+        	mySketch.glenable("line_stipple");
+			mySketch.gllinestipple(1, 3855);
+			mySketch.gllinewidth(2);
+			mySketch.gllinewidth(2);
+			//
+			mySketch.plane(this.width, this.height); // putting scale.y here to avoid using glscale
+        	mySketch.glpopmatrix();
+        break;
+
+        case "PLN_12B":
+		    mySketch.glpushmatrix();
+		    mySketch.shapeorient(0, 0, 0);
+		    mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0); // position shape at location
+			mySketch.moveto(0, 0, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			//
+			mySketch.shapeprim("lines");
+			mySketch.shapeslice(3, 1);
+			mySketch.gldisable("line_stipple");
+			mySketch.gllinestipple(1, 255);
+			mySketch.gllinewidth(30);
+			mySketch.glpointsize(10);
+			mySketch.plane(this.width - increment, (this.height - increment) * this.scale.y); // putting scale.y here to avoid using glscale
+        	//
+   //      	mySketch.glenable("line_stipple");
+			// mySketch.gllinestipple(1, 3855);
+			// mySketch.gllinewidth(2);
+			// mySketch.gllinewidth(30);
+			mySketch.glenable("line_stipple");
+			mySketch.gllinestipple(1, 128);
+
+			mySketch.glcolor(0, 0, 0, alpha / 8);
+			mySketch.plane(this.width - increment, (this.height - increment) * this.scale.y); // putting scale.y here to avoid using glscale
+			// mySketch.gllinewidth(2);
+			//
+			mySketch.glcolor(this.color.r, this.color.g, this.color.b, alpha / 8);
+			mySketch.plane(this.width - increment, this.height - increment); // putting scale.y here to avoid using glscale
+        	mySketch.glpopmatrix();
+        break;
+
+        case "PLN_12C":
+		    mySketch.glpushmatrix();
+		    mySketch.shapeorient(0, 0, 0);
+		    mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0); // position shape at location
+			mySketch.moveto(0, 0, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			//
+			mySketch.shapeprim("lines");
+			mySketch.shapeslice(3, 1);
+			mySketch.gldisable("line_stipple");
+			mySketch.gllinestipple(1, 255);
+			mySketch.gllinewidth(30);
+			mySketch.glpointsize(10);
+			mySketch.plane(this.width - increment, (this.height / 8) * this.scale.y); // putting scale.y here to avoid using glscale
+        	mySketch.glpopmatrix();
+
+        	mySketch.glpushmatrix();
+        	mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0);
+			mySketch.glenable("line_stipple");
+			mySketch.gllinestipple(1, 128);
+			// mySketch.gllinewidth(2);
+			//
+			mySketch.moveto(0, 0, 0);
+			mySketch.glcolor(this.color.r, this.color.g, this.color.b, alpha / 4);
+			mySketch.plane(this.width - increment, this.height - increment); // putting scale.y here to avoid using glscale
+        	mySketch.glpopmatrix();
+        break;
+
+   		case "PLN_20A":
+		    mySketch.glpushmatrix();
+		    mySketch.shapeorient(0, 0, 0);
+		    mySketch.gltranslate(this.location.x, (this.location.y + (this.scale.y * this.height) - this.height), 0); // position shape at location
+			mySketch.moveto(0, 0, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			//
+			mySketch.gldisable("line_stipple");
+			mySketch.shapeprim("points");
+			mySketch.shapeslice(1, 1);
+			mySketch.glpointsize(10);
+			//
+			mySketch.plane(this.width, this.height * this.scale.y); // putting scale.y here to avoid using glscale
+        	mySketch.glpopmatrix();
+        break;
+
+        case "PLN_32A":
+		    mySketch.glpushmatrix();
+		    mySketch.shapeorient(0, 0, 0);
+		    mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0); // position shape at location
+			mySketch.moveto(0, 0, 0);
+			mySketch.glrotate(this.rotation, 1, 0, 0);
+			//
+			mySketch.shapeprim("lines");
+			mySketch.shapeslice(4, 1);
+			mySketch.gldisable("line_stipple");
+			mySketch.gllinestipple(1, 255);
+			mySketch.gllinewidth(10);
+			mySketch.glpointsize(10);
+			//
+			mySketch.plane(this.width, this.height * this.scale.y); // putting scale.y here to avoid using glscale
+        	//
+        	mySketch.glenable("line_stipple");
+			mySketch.gllinestipple(1, 3855);
+			mySketch.gllinewidth(2);
+			//
+			mySketch.glcolor(0, 0, 0, 1);
+			mySketch.shapeprim("points");
+			mySketch.shapeslice(4, 16);
+			mySketch.plane(this.width, this.height); // putting scale.y here to avoid using glscale
+        	mySketch.glpopmatrix();
+        break;
+
+       	//–––––––––––-
+		// Line based
+		//––––––––––-–
+
+        case "HLN_00A":
+        	mySketch.glpushmatrix();
+        	mySketch.shapeorient(0, 0, 0);
+        	mySketch.gltranslate(this.location.x, this.location.y * (1 - (high * dial1)), 0); // position shape at location
+			mySketch.moveto(this.location.x - this.width, this.location.y, 0);
+			mySketch.glrotate(this.rotation, 0, 0, -1);
+			mySketch.glscale(this.scale.x, 1, 1);
+			//
+			mySketch.gldisable("line_stipple");
+			//
+			mySketch.lineto(this.location.x + this.width, this.location.y * (1 - (high * dial1)), 0);
+        	mySketch.glpopmatrix();
+        break;
+
+        case "HLN_00B":
+        	mySketch.glpushmatrix();
+        	mySketch.shapeorient(0, 0, 0);
+        	mySketch.gltranslate(this.location.x, this.location.y * (1 - (high * dial1)), 0); // position shape at location
+			mySketch.moveto(this.location.x - this.width, this.location.y, 0);
+			mySketch.glrotate(this.rotation, 0, 0, -1);
+			mySketch.glscale(this.scale.x, 1, 1);
+			//
+			mySketch.gldisable("line_stipple");
+			//
+			mySketch.lineto(this.location.x + this.width, this.location.y * (1 - (high * dial1)), 0);
+			mySketch.moveto((this.location.x + this.width)* (1 - (high * dial1)), (this.location.y + increment), 0);
+			mySketch.lineto(this.location.x + this.width, (this.location.y + increment) * (1 - (high * dial1)), 0);
+        	mySketch.glpopmatrix();
+        break;
+
+        case "HLN_00C":
         	// dsg aka double segment: similar to segment but it creates nice 45degrees compositions when rotating
 			mySketch.glpushmatrix();
+			mySketch.shapeorient(0, 0, 0);
 			mySketch.glrotate(this.rotation/2, 0, 0, 1);
 			mySketch.glscale(this.scale.x, 1, 1);
+			mySketch.move(0, 0, 0);
 			mySketch.linesegment(this.location.x - this.width, this.location.y, 0, this.location.x + this.width, this.location.y, 0);
 			mySketch.glrotate(this.rotation, 0, 0, 1);
 			mySketch.linesegment(this.location.x - this.width, this.location.y, 0, this.location.x + this.width, this.location.y, 0);
         	mySketch.glpopmatrix();
         break;
 
-        // Line based
-        case "pin___":
+        case "VLN____":
 	    	mySketch.glpushmatrix();
-			mySketch.linesegment(this.locationGenesis.x, this.boundTop, 0, this.locationGenesis.x * this.scale.x, this.location.y, 0);	
-			mySketch.glpopmatrix();
-
-			mySketch.glpushmatrix();
-			mySketch.shapeslice(30); 
-	        mySketch.circle(0.0125 * this.scale.x);
+			mySketch.linesegment(this.location.x, this.boundTop, 0, this.location.x, this.boundTop - (this.boundsHeight * this.scale.y), 0);
 	        mySketch.glpopmatrix();
         break;
 
-        case "mnt___":
+        case "MNT____":
 	    	mySketch.glpushmatrix();
 			mySketch.linesegment(this.boundLeft, this.locationGenesis.y, 0, this.locationGenesis.x * this.scale.x, this.location.y, 0);
 			mySketch.linesegment(this.locationGenesis.x * this.scale.x, this.location.y, 0, this.boundRight, this.locationGenesis.y, 0);	
 			mySketch.glpopmatrix();
         break;
 
-        // Circle based
-        case "rnd___":
-			mySketch.glpushmatrix();			
-			mySketch.gltranslate(this.locationGenesis.x, this.locationGenesis.y, 0);
-			mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.moveto(this.locationGenesis.x, this.location.y + increment, 0);
-			mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.circle(increment * this.scale.x);
-			mySketch.moveto(this.location.x, this.locationGenesis.y - increment, 0);
-			mySketch.circle(increment * this.scale.x);
-	        mySketch.glpopmatrix();
-        break;
-
-        case "ttt___":
-			mySketch.glpushmatrix();			
-			mySketch.gltranslate(this.location.x, this.location.y, 0);
-			mySketch.glrotate(this.rotation, 0, 0, 1);
-			// mySketch.shapeprim("line_strip"); 
-			// mySketch.shapeslice(1, 2); 
-			mySketch.moveto(0, 0, 0);
-			// mySketch.shapeorient(0, 0, this.rotation);
-			// mySketch.glcolor(0, 0, 1, 0.3);
-			mySketch.plane(this.width/2, this.height - increment);
-			// mySketch.glcolor(0, 0, 1, 0.3);
-			// mySketch.move(0, 0, 0);
-			// mySketch.framequad(this.boundRight, this.boundTop, 0, this.boundRight, this.boundBottom, 0, this.boundLeft, this.boundBottom, 0, this.boundLeft, this.boundTop, 0);
-			mySketch.glcolor(0, 1, 0, 0.3);
-			mySketch.moveto(0, (this.height)/2 + increment, 0);
-			mySketch.circle(this.width/2);
-			mySketch.glcolor(0, 0, 0, 1);
-			mySketch.circle(this.width/4);
-
-			mySketch.glcolor(0.9, 0.9, 0.9, 1);
-			// mySketch.glcolor(1, 0, 0, 0.3);
-			mySketch.moveto(0, -(this.height - increment), 0);
-			mySketch.circle(this.width/2);
-			mySketch.glcolor(0, 0, 0, 1);
-			mySketch.circle(this.width/4);
-	        mySketch.glpopmatrix();
-        break;
-
-
-
-        //////////////////
-        // TO CLEAN UP
-        /////////////////
-	    case "x--":
-	    	mySketch.glpushmatrix();
-	    	mySketch.gltranslate(this.location.x, this.location.y, 0);
-	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-	    	// dividing size by 2 becasue linesegments takes coordinates which would make it double the size otherwise
-			mySketch.linesegment(-this.size/2, -this.size/2, 0, this.size/2, this.size/2, 0);
-			mySketch.linesegment(-this.size/2, this.size/2, 0, this.size/2, -this.size/2, 0);
-        	mySketch.glpopmatrix();
-        break;
-
-	    case "rl-":
+	    case "RAL____":
 	    	mySketch.glpushmatrix();
 			mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
-	    	mySketch.glrotate(this.rotation, 0, 0, 1);
-			mySketch.linesegment(-this.size, 0, 0, this.size, 0, 0);
-			mySketch.linesegment(this.location.x, this.size/8, 0, this.location.x, -this.size/8, 0);
+	    	mySketch.moveto(0, 0, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			//
+			mySketch.gldisable("line_stipple");
+			//
+			mySketch.plane(this.boundsWidth / 2, 0.0019);
+			mySketch.moveto(0, this.locationGenesis.x * (1 - this.scale.x), 0);
+			mySketch.glrotate(90, 0, 0, 1);
+
+			mySketch.plane(0.03, 0.0019);
         	mySketch.glpopmatrix();
         break;
 
-	    case "a_l":
-	    	mySketch.glpushmatrix();
-	    	var w = this.boundRight - this.boundLeft;
-		    mySketch.gltranslate(this.locationGenesis.x + -this.size, this.locationGenesis.y, 0);
-		    // mySketch.glrotate(45, 0., 0., 1.);
-		    mySketch.glscale(this.size, 0, 0);
-			mySketch.linesegment(this.boundLeft, 0, 0, this.boundRight, 0, 0);
-			mySketch.glpopmatrix();
-		break;
+        //––––––––––––––
+        // Circle based
+        //––––––––––––––
 
-		case "v_l":
+        case "HEX___A":
 			mySketch.glpushmatrix();
-		    mySketch.gltranslate(this.location.x, 0, 0);
-			mySketch.linesegment(0, this.boundBottom, 0, 0, this.boundTop, 0);
-			mySketch.glpopmatrix();
-		break;	
+			mySketch.shapeorient(0, 0, 0);
+			mySketch.gltranslate(this.location.x + positions[1], this.locationGenesis.y, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.moveto(0, 0, 0);
+			//
+			mySketch.shapeslice(6);
+			mySketch.circle(0.015);
+	        mySketch.glpopmatrix();
+        break;
 
-		case "h_l":
+        case "HEX___B":
 			mySketch.glpushmatrix();
-			var w =  Math.abs(this.boundRight - this.boundLeft) / 2;
-		    mySketch.gltranslate(this.locationGenesis.x, this.location.y, 0);
-			mySketch.glrotate(this.rotation/2, 0, 0, 1);
-			// mySketch.moveto(w, 0, 0);
-			mySketch.plane(w, 0.005, w, 0.005);	
-			mySketch.glpopmatrix();
-	        break;
+			mySketch.shapeorient(0, 0, 0);
+			mySketch.gltranslate(this.location.x, this.locationGenesis.y, 0);
+			mySketch.shapeorient(0, 0, this.rotation + 45);
+			mySketch.moveto(0, 0, 0);
+			//
+			mySketch.shapeslice(4);
+			mySketch.framecircle(0.015);
+	        mySketch.glpopmatrix();
+        break;
+
+        case "HEX_00A":
+			mySketch.glpushmatrix();
+			mySketch.shapeorient(0, 0, 45);
+			mySketch.gltranslate(this.location.x, this.locationGenesis.y, 0);
+			mySketch.glrotate(this.rotation, 0, 1, 0);
+			mySketch.moveto(0, 0, 0);
+			mySketch.glscale(this.scale.x, this.scale.y, 0)
+			//
+			mySketch.gldisable("line_stipple");
+			mySketch.shapeslice(4);
+			//
+			mySketch.framecircle(0.015);
+	        mySketch.glpopmatrix();
+        break;
+
+        case "HEX_00B":
+			mySketch.glpushmatrix();
+			mySketch.shapeorient(0, 0, 45);
+			mySketch.gltranslate(this.location.x, this.locationGenesis.y, 0);
+			mySketch.glrotate(this.rotation, 0, 0, 1);
+			mySketch.moveto(0, 0, 0);
+			
+			mySketch.shapeslice(24);
+			//
+			mySketch.circle(0.00375);
+
+			mySketch.glscale(this.scale.x, this.scale.y, 0)
+			//
+			mySketch.shapeslice(4);
+			//
+			mySketch.framecircle(0.015);
+	        //
+			
+	        mySketch.glpopmatrix();
+        break;
+
+        case "HEX___C":
+			mySketch.glpushmatrix();
+			mySketch.shapeorient(0, 0, 0);
+			mySketch.gltranslate(this.location.x + positions[1], this.locationGenesis.y, 0);
+			mySketch.glrotate(this.rotation + 45, 0, 0, 1);
+			mySketch.moveto(positions[0], 0, 0);
+			//
+			mySketch.shapeslice(32);
+			mySketch.framecircle(0.015);
+	        mySketch.glpopmatrix();
+        break;
 
 	    default:
 	    	// if no object type has been assigned, make a red dot in the middle of the screen 
 	    	// i had something here but then removed it because it was constantly displayed... not sure why. I should check the max patch.
 	}
 
-	mySketch.glflush(); // you started testing glflus on jan 14, 2017 to see if it would increase performance.
+	mySketch.glflush(); // you started testing glflush on jan 14, 2017 to see if it would increase performance.
 }
 
 Character.prototype.update = function(){	
@@ -370,14 +562,6 @@ Character.prototype.update = function(){
 	if(this.scaling){
 		this.scale.x = Math.abs(this.easeValue(this.scale.x, this.targetScale.x, this.scaling));
 		this.scale.y = Math.abs(this.easeValue(this.scale.y, this.targetScale.y, this.scaling));
-	}
-
-	if(this.flashing){
-		this.flash();		
-	}
-
-	if(this.bouncing){
-		this.bounce();
 	}
 
 	if(this.fading){
@@ -419,25 +603,6 @@ Character.prototype.checkBounds = function(xStep, yStep){
 	this.targetLocation.y = this.targetLocation.y + y;
 }
 
-Character.prototype.flash = function(){
-	if((clock % 2) == 0){
-		this.lifespan = 255;
-	} else {
-		this.lifespan = 0;
-	}
-}
-
-var testinc = 0.2
-
-Character.prototype.bounce = function(){
-	// post("testinc: " + testinc + "\n");
-	// post("this.location.y: " + this.location.y + "\n");
-	if(clock % this.freq == 0){
-		this.location.y = this.location.y + testinc;	
-		testinc = testinc * -1;
-	}
-}
-
 
 
 //====================================
@@ -473,11 +638,9 @@ function genesis(layer, items, type, gridColumns, gridRows){
 	var rows = columnsAndRows[1];
 	var totalCells = columns * rows;
 
-	// var maxColumns = windowWidth / increment / 2;
-
 	var colPace = (windowWidth / columns) / 2;
 	var rowPace = (windowHeight / rows) / 2;
-	var multiples = [1, 3, 5, 7, 9, 11, 13, 15];
+	var multiples = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
 
 	var xCoordinates = [];
 	var yCoordinates = [];
@@ -487,10 +650,6 @@ function genesis(layer, items, type, gridColumns, gridRows){
 	var topBounds = [];
 
 	var cellsIndex = 0; // defines the starting cell in polulating a grid (eg: grid 2coll 2rows cellsIndex = 1, first element will be in the second cell - bottom right)
-
-	// if(columns > maxColumns){
-	// 	columns = maxColumns;
-	// }
 
 	// calculate x and y position for all items
 	for (var f = 0; f < rows; f++) {
@@ -529,6 +688,10 @@ function genesis(layer, items, type, gridColumns, gridRows){
 	for (var i = cellsIndex; i < (items + cellsIndex); i++) {
 		addCharactersToLayer(array, xCoordinates[i], yCoordinates[i], leftBounds[i], rightBounds[i], bottomBounds[i], topBounds[i], type);					
 	}
+
+	// for (var i = totalCells; i >= (totalCells - items); i--) {
+	// 	addCharactersToLayer(array, xCoordinates[i], yCoordinates[i], leftBounds[i], rightBounds[i], bottomBounds[i], topBounds[i], type);					
+	// }
 }
 
 
@@ -549,26 +712,19 @@ function assignLifeSpan(value){
 		}
 	}
 }
-		
-// sustain: allows to maintain image on screen for as long as pad is pressed
-function checkSustain(layer, velocity){
-	updateSustainForLayer(layer, velocity);
-	// go get the right array for the layer I want to interact with
-	var array = getArrayForLayer(layer);	
-	// do the following only if the array is populated to avoid errors
-	if(array.length > 0){
-		// go through each element in the array
-		for(var i = 0; i < array.length; i++){
-			if(velocity > 0){
-				array[i].lifespan = newLifeSpan; // recover lifespan
-				array[i].fading = false;
-			} else {
-				array[i].fading = true;
-			}
+
+var newEase = 0.2;
+
+function assignEase(value){	
+	for(var i = 0; i < layers.length; i++){
+		for(var f = 0; f < layers[i].elements.length; f++){
+			newEase = 1 - value;
+			newEase = newEase  == 0 ? 0.1 : newEase;
+			layers[i].elements[f].ease = newEase;
 		}
 	}
 }
-
+		
 function newLocationTarget(layer, velocity, easeStatus, arrangement){
 	// go get the right array for the layer I want to interact with
 	var array = getArrayForLayer(layer);	
@@ -582,20 +738,12 @@ function newLocationTarget(layer, velocity, easeStatus, arrangement){
 				// enable easing for moving
 				array[i].moving = easeStatus;
 				// assign ease value
-				array[i].ease = velocity / 128;
+				// array[i].ease = velocity / 128;
 				// pick a position where to send the object
 				switch (arrangement){
 					case "roam":
 						var locationX = positions[Math.floor((Math.random() * 2))];
 						var locationY = positions[Math.floor((Math.random() * 2))];
-					break;
-					case "vertical":
-						var locationX = 0;
-						var locationY = positions[Math.floor((Math.random() * 2))];
-					break;
-					case "horizontal":
-						var locationX = positions[Math.floor((Math.random() * 2))];
-						var locationY = 0;
 					break;
 					case "reset":
 						var locationX = -(array[i].targetLocation.x - array[i].locationGenesis.x);
@@ -629,7 +777,7 @@ function newRotationTarget(layer, velocity, easeStatus){
 				// enable easing for moving
 				array[i].rotating = easeStatus;
 				// assign ease value
-				array[i].ease = velocity / 128;
+				// array[i].ease = velocity / 128;
 				// check bounds. this also assigns the values to the right object properites
 				array[i].rotation = array[i].targetRotation;
 				// array[i].targetRotation += angle * randomDirection;
@@ -653,7 +801,7 @@ function newScaleTarget(layer, velocity, easeStatus, arrangement){
 				// enable easing for moving
 				array[i].scaling = easeStatus;
 				// assign ease value
-				array[i].ease = velocity / 128;
+				// array[i].ease = velocity / 128;
 				// pick a position where to send the object
 				switch (arrangement){
 					case "random":
@@ -697,30 +845,3 @@ function updateLifeDecay(value){
 	}
 }
 
-function callAction(family, type, layer, velocity){
-	// create action name concatenating family and type
-	var action = family.concat(type);
-	switch (action){
-		case "resetAll":
-			newLocationTarget(layer, velocity, true, "reset");
-			// newSizeTarget(layer, velocity, true, "reset");
-		break;
-		case "translateBoth":
-			newLocationTarget(layer, velocity, true, "roam");
-		break;
-		// case "translateVertical":
-		// 	newLocationTarget(layer, velocity, true, "vertical");
-		// break;
-		// case "translateHorizontal":
-		// 	newLocationTarget(layer, velocity, true, "horizontal");
-		// break;
-		case "rotateRandom":
-			newRotationTarget(layer, velocity, true);
-		break;
-		case "scaleBoth":
-			// newSizeTarget(layer, velocity, true, "scale");
-			newScaleTarget(layer, velocity, true, "random");
-
-		break;
-	}
-}

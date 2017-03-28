@@ -10,9 +10,6 @@
 // Things you will forget
 // 1.0 — always first check the array of shape is not empty otherwise it will give an error. remember every time a new scen starts the array is emptied and quickly populated again with the elements necessary for the current scene
 
-// About main.js
-// This is where 
-
 
 
 // ———————
