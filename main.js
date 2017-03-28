@@ -8,25 +8,43 @@
 // Github:
 
 // Things you will forget
-// 1.0 — always first check the array of shape is not empty otherwise it will give an error. remember every time a new scen starts the array is emptied and quickly populated again with the shapes necessary for the current scene
+// 1.0 — always first check the array of shape is not empty otherwise it will give an error. remember every time a new scen starts the array is emptied and quickly populated again with the elements necessary for the current scene
+
+// About main.js
+// This is where 
 
 
-//===================
-//		General
-//===================
 
-autowatch = 1;
-outlets = 2;
+// ———————
+// GENERAL
+// ———————
+
+autowatch = 1; // so the [js] object in max wil recompile the code each time is saved 
+outlets = 2; // number of outlets for the [js] object
 
 include("utilities");
 include("characters");
 
-// low mid high levels coming from the DSP Values M4L device in the same track as this one.
-var low = 0;
-var mid = 0;
-var high = 0;
+var layer1 = new Layer();
+var layer2 = new Layer();
+var layer3 = new Layer();
+var layer4 = new Layer();
 
-var dial0 = 0;
+var layers = [layer1, layer2, layer3, layer4];
+
+var colorBlack = Object.create(Color);
+colorBlack.r = 0;
+colorBlack.g = 0;
+colorBlack.b = 0;
+colorBlack.a = 1;
+
+var colorWhite = Object.create(Color);
+colorWhite.r = 1;
+colorWhite.g = 1;
+colorWhite.b = 1;
+colorWhite.b = 1;
+
+var dial0 = 0;	
 var dial1 = 0;
 var dial2 = 0;
 var dial3 = 0;
@@ -35,12 +53,18 @@ var dial5 = 0;
 var dial6 = 0;
 var dial7 = 0;
 
+// low mid high levels coming from the DSP Values M4L device in the same track as this one.
+var low = 0;
+var mid = 0;
+var high = 0;
+
 var progressBar = new Line(viewPortLeft, viewPortBottom, viewPortRight, viewPortBottom);
 
 
-//==================
-//		Setup
-//==================
+
+// –––––
+// SETUP
+// —————
 
 calculateSizesForViewPort();
 scaleSketch();
@@ -49,29 +73,16 @@ newGrid(8); // build a grid that draw() will display
 
 
 
-//==================
-//		Methods
-//==================
+// ———————————–––––––––––––––––––––––––––––––––––––––––––––
+// USER INPUTS: Methods listening to  MIDI inputs from Live
+// ———————————————————————————————————————————–––––––––––––
 
-function transport(l, m, h){
-	// update values for low mid high levels coming from the DSP Values M4L device in the same track as this one.
-	low = l;
-	mid = m;
-	high = h;
-}
-
-function levels(l, m, h){
-	// update values for low mid high levels coming from the DSP Values M4L device in the same track as this one.
-	low = l;
-	mid = m;
-	high = h;
-}
-
+// dials
 function dialValue(dial, value){	
 	switch (dial){
 		case "d0":
-			assignLifeSpan(value);
 			dial0 = value;
+			assignLifeSpan(value);
 		break;
 		case "d1":
 			dial1 = value;
@@ -89,76 +100,75 @@ function dialValue(dial, value){
 			dial5 = value;
 		break;
 		case "d6":
-			updateLifeDecay(value);			
 			dial6 = value;
+			updateLifeDecay(value);			
+			assignEase(value);
+			background(value);
 		break;
 		case "d7":
-			background(value);
 			dial7 = value;
 		break;
 		default:
 	}
 }
 
-var whiteOnBlack = true;
-
-function invertColors(invert){
-	if (invert == 0) {
-		whiteOnBlack = true;
-		// back to black
-		colorBlack.r = 0;
-		colorBlack.g = 0;
-		colorBlack.b = 0;
-		// back to white
-		colorWhite.r = 0.9;
-		colorWhite.g = 0.9;
-		colorWhite.b = 0.9;
-		// black background
-		myRender.erase_color = [0, 0, 0, 1];
-		// white grid
-		myGrid.gl_color = [0.8, 0.8, 8, 0.1];
-	} else if (invert == 1){
-		whiteOnBlack = false;
-		// black into white
-		colorBlack.r = 0.9;
-		colorBlack.g = 0.9;
-		colorBlack.b = 0.9;
-		// white into black
-		colorWhite.r = 0;
-		colorWhite.g = 0;
-		colorWhite.b = 0;
-		// white background background
-		myRender.erase_color = [1, 1, 1, 1];
-		// black grid
-		myGrid.gl_color = [0, 0, 0, 0.1];
+// pads: sustain control to maintain elements on screen for as long as pad is pressed
+function checkSustain(layer, velocity){
+	updateSustainForLayer(layer, velocity);
+	// go get the right array for the layer I want to interact with
+	var array = getArrayForLayer(layer);	
+	// do the following only if the array is populated
+	if(array.length > 0){
+		// go through each element in the array
+		for(var i = 0; i < array.length; i++){
+			if(velocity > 0){
+				array[i].lifespan = newLifeSpan; // recover lifespan
+				array[i].fading = false; // don't fade as long as pad is pressed 
+			} else {
+				// if velocity is == 0 (aka pad no longer pressed) then start fading the element
+				array[i].fading = true;
+			}
+		}
 	}
 }
 
-function gridIntensity(){
-	// adding 0.1 so it never goes to 0
-	if(whiteOnBlack == true){
-		myGrid.gl_color = [0.8, 0.8, 0.8, (high * dial1) + 0.1];
-	} else {
-		myGrid.gl_color = [0, 0, 0, (high * dial1) + 0.1];
-	}
-}
+// pads: interaction with layers
+function callAction(family, type, layer, velocity){
+	// create action name concatenating family and type
+	var action = family.concat(type);
+	switch (action){
+		case "resetAll":
+			newLocationTarget(layer, velocity, true, "reset");
+			// newSizeTarget(layer, velocity, true, "reset");
+		break;
+		case "translateBoth":
+			newLocationTarget(layer, velocity, true, "roam");
+		break;
+		// case "translateVertical":
+		// 	newLocationTarget(layer, velocity, true, "vertical");
+		// break;
+		// case "translateHorizontal":
+		// 	newLocationTarget(layer, velocity, true, "horizontal");
+		// break;
+		case "rotateRandom":
+			newRotationTarget(layer, velocity, true);
+		break;
+		case "scaleBoth":
+			// newSizeTarget(layer, velocity, true, "scale");
+			newScaleTarget(layer, velocity, true, "random");
 
-function background(value){
-	if(whiteOnBlack == true){
-		myRender.erase_color = [0, 0, 0, 1 - value];
-	} else {
-		myRender.erase_color = [1, 1, 1, 1 - value];
+		break;
 	}
-}
-
-function updateProgressBar(timeLeft, totalTime){
-	progressBar.endPoint.x = (windowWidth * (timeLeft / totalTime)) - viewPortRight;
 }
 
 function updateSustainForLayer(layer, velocity){	
-	// this method was made to update a boolean value I can then use to decide 
-	// wether or not drawing instruction for a specific layer should be sent to mySketch
-	// with the objective to same cpu when shapes' lifespan is 0
+	// this method updates a boolean value I can then use to decide
+	// wether or not sending drawing instruction for a specific layer
+	// to mySketch. That is because when shapse are not visible, 
+	// lifespan (aka opacity) is set to 0, but elements are still drawn.
+	// In this way when a note's velocity is > 0, drawing commands are
+	// sent to mySketch and elements are drawn, else drawing commands are 
+	// blocked saving cpu when elements don't need to be shown
 	var sustainStatus = velocity > 0 ? true : false;
 	
 	switch (layer){
@@ -179,13 +189,101 @@ function updateSustainForLayer(layer, velocity){
 }
 
 
+
+//==================
+//		Methods
+//==================
+
+// not used
+// function transport(l, m, h){
+// 	// update values for low mid high levels coming from the DSP Values M4L device in the same track as this one.
+// 	low = l;
+// 	mid = m;
+// 	high = h;
+// }
+
+function levels(l, m, h){
+	// update values for low mid high levels coming from the DSP Values M4L device in the same track as this one.
+	low = l;
+	mid = m;
+	high = h;
+}
+
+var whiteOnBlack = true;
+// this method is not currently used but I implemented for future use
+// all it does is inverting colors, black becomes white and vice versa
+// I thouught it could be a fun effect to trigger every now and then or 
+// to let the patch to control independently. Right now it's just a draft
+// as I'm sure there is an easier way to implement this functionality.
+function invertColors(invert){	
+	if (invert == 0) {
+		whiteOnBlack = true;
+		// back to black
+		colorBlack.r = 0;
+		colorBlack.g = 0;
+		colorBlack.b = 0;
+		// back to white
+		colorWhite.r = 1;
+		colorWhite.g = 1;
+		colorWhite.b = 1;
+		// black background
+		myRender.erase_color = [0, 0, 0, 1];
+		// white grid
+		myGrid.gl_color = [0.1, 0.1, 0.1, 1];
+	} else if (invert == 1){
+		whiteOnBlack = false;
+		// black into white
+		colorBlack.r = 1;
+		colorBlack.g = 1;
+		colorBlack.b = 1;
+		// white into black
+		colorWhite.r = 0;
+		colorWhite.g = 0;
+		colorWhite.b = 0;
+		// white background background
+		myRender.erase_color = [1, 1, 1, 1];
+		// black grid
+		myGrid.gl_color = [0.9, 0.9, 0.9, 1];
+	}
+}
+
+// gridIntensity makes the grid's color reactive to audio signal
+function gridIntensity(){
+	if(whiteOnBlack == true){
+		// adding 0.1 so it never goes to 0
+		var value = 0.1 + (high * dial1);
+		// assigning value to R, G and B to make it go from black to white
+		myGrid.gl_color = [value, value, value, 1];
+	} else {
+		var value = 0.9 - (high * dial1);
+		myGrid.gl_color = [value, value, value, 1];
+	}
+}
+
+function background(value){
+	if(whiteOnBlack == true){
+		myRender.erase_color = [0, 0, 0, 1 - (value - 0.01)];
+	} else {
+		myRender.erase_color = [1, 1, 1, 1 - (value - 0.01)];
+	}
+}
+
+function updateProgressBar(timeLeft, totalTime){
+	progressBar.endPoint.x = (windowWidth * (timeLeft / totalTime)) - viewPortRight;
+}
+
+
+
+
 //==================
 //		Draw
 //==================
 
-function draw(){
+function draw(){	
 
+	// check if Layer has to be drawn
 	if(layer1.toDraw()){
+		// draw all elements  in layer
 		for(var i = 0; i < layer1.elements.length; i++){
 			layer1.elements[i].run();
 		}
