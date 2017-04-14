@@ -9,7 +9,7 @@
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 893.0, 373.0, 1282.0, 750.0 ],
+		"rect" : [ 534.0, 132.0, 1282.0, 750.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -43,7 +43,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 495.5, 99.0, 148.0, 20.0 ],
-					"presentation_rect" : [ 496.0, 99.0, 0.0, 0.0 ],
 					"style" : "",
 					"text" : "setup scene (1st outlet)"
 				}
@@ -56,7 +55,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 395.0, 99.0, 85.0, 20.0 ],
-					"presentation_rect" : [ 395.0, 99.0, 0.0, 0.0 ],
 					"style" : "",
 					"text" : "Seconds Left"
 				}
@@ -69,7 +67,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 196.0, 84.0, 150.0, 20.0 ],
-					"presentation_rect" : [ 195.0, 132.0, 0.0, 0.0 ],
 					"style" : "",
 					"text" : "Midiparse"
 				}
@@ -303,7 +300,7 @@
 					"maxclass" : "inlet",
 					"numinlets" : 0,
 					"numoutlets" : 1,
-					"outlettype" : [ "" ],
+					"outlettype" : [ "int" ],
 					"patching_rect" : [ 398.799561, 125.0, 30.0, 30.0 ],
 					"style" : ""
 				}
@@ -344,9 +341,9 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 398.799561, 632.444824, 593.0, 21.0 ],
+					"patching_rect" : [ 398.799561, 632.444824, 583.0, 21.0 ],
 					"style" : "",
-					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.02 0.02 1. @position -0.375 0.5 0. @layer 1 @blend_enable 1"
+					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.03 0.03 1. @position 0. 0.125 0. @layer 1 @blend_enable 1"
 				}
 
 			}
@@ -442,7 +439,7 @@
 					"outlettype" : [ "jit_matrix", "" ],
 					"patching_rect" : [ 617.75, 513.0, 593.0, 21.0 ],
 					"style" : "",
-					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.02 0.02 1. @position 0. -0.0625 0. @layer 1 @blend_enable 1"
+					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.03 0.03 1. @position 0. -0.0625 0. @layer 1 @blend_enable 1"
 				}
 
 			}
@@ -456,7 +453,7 @@
 					"outlettype" : [ "jit_matrix", "" ],
 					"patching_rect" : [ 577.0, 542.444824, 587.0, 21.0 ],
 					"style" : "",
-					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.02 0.02 1. @position 0. -0.125 0. @layer 1 @blend_enable 1"
+					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.03 0.03 1. @position 0. -0.125 0. @layer 1 @blend_enable 1"
 				}
 
 			}
@@ -470,7 +467,7 @@
 					"outlettype" : [ "jit_matrix", "" ],
 					"patching_rect" : [ 536.25, 573.444824, 593.0, 21.0 ],
 					"style" : "",
-					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.02 0.02 1. @position 0. -0.1875 0. @layer 1 @blend_enable 1"
+					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.03 0.03 1. @position 0. -0.1875 0. @layer 1 @blend_enable 1"
 				}
 
 			}
@@ -484,7 +481,7 @@
 					"outlettype" : [ "jit_matrix", "" ],
 					"patching_rect" : [ 495.5, 603.444824, 581.0, 21.0 ],
 					"style" : "",
-					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.02 0.02 1. @position 0. -0.25 0. @layer 1 @blend_enable 1"
+					"text" : "jit.gl.text3d video-window @color 0.5 0.5 0.5 1. @scale 0.03 0.03 1. @position 0. -0.25 0. @layer 1 @blend_enable 1"
 				}
 
 			}
@@ -945,8 +942,6 @@
 
 			}
  ],
-		"dependency_cache" : [  ],
-		"autosave" : 0,
 		"styles" : [ 			{
 				"name" : "newobjYellow-1",
 				"default" : 				{

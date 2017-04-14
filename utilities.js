@@ -18,7 +18,7 @@ myMatrix.dim = [1280, 1024];
 
 var myWindow = new JitterObject("jit.window", "video-window"); //
 myWindow.floating = 0;
-myWindow.size = [400, 800];
+myWindow.size = [500, 1000];
 myWindow.pos = [0, 0];
 myWindow.fsaa = 1;
 myWindow.floating = 1;
@@ -220,6 +220,16 @@ function assignScreenResolution(width, height){
 	screenResolution[1] = height;
 	calculateSizesForViewPort();
 	scaleSketch();
+}
+
+// this method is to toggle the floating property for the window
+function toggleFloatingForWindow(toggle){
+	myWindow.floating = toggle;
+}
+
+// this method is to toggle the border property for the window
+function toggleBorderForWindow(toggle){
+	myWindow.border = toggle;
 }
 
 // this method sets the viewport aspect ratio. Note: this aspect ratio can differ from the output screen's one.
